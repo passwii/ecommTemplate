@@ -8,3 +8,6 @@ out/
 
 # Local ZCode session artifacts
 .zcode/
+
+# Local CodeGraph index
+.codegraph/
