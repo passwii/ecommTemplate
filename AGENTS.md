@@ -26,3 +26,10 @@ Do not silently introduce a second visual style inside an existing template. Tem
 3. Prefer shared content contracts with template-owned composition.
 4. Verify desktop and mobile layouts, keyboard focus, empty/unknown routes, and build/type checks.
 5. Update this file and `AGENTS.md` if the delivery convention changes.
+
+## Agent contribution and PR review
+
+- Follow the project test and merge policy in [TESTING.md](./TESTING.md).
+- For frontend PRs, use the author's reported local test results as the required machine evidence; Vercel deployment checks are not a merge prerequisite for this project.
+- The reviewer still checks the changed code, the test declaration, and relevant edge cases before merging. Missing, failed, or contradictory local test results block approval; do not claim a test passed unless it was run.
+- Product administration remains a browser-local MVP. Do not describe localStorage persistence as a secure or production-ready backend.
