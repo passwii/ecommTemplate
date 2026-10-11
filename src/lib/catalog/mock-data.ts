@@ -9,6 +9,13 @@ export type ProductSpecification = {
   value: string;
 };
 
+export type ProductResource = {
+  title: string;
+  url: string;
+  fileType?: string;
+  description?: string;
+};
+
 export type Product = {
   id: string;
   slug: string;
@@ -27,6 +34,11 @@ export type Product = {
   featured: boolean;
   sortOrder: number;
   sku?: string;
+  /** Optional trade details; older catalog records may not include them. */
+  applications?: string[];
+  minimumOrderQuantity?: string;
+  leadTime?: string;
+  resources?: ProductResource[];
   /** Storefront compatibility fields: aliases for the primary image and short description. */
   summary: string;
   image: string;
