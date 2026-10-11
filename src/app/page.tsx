@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { products } from "@/lib/catalog/mock-data";
-import { ProductCard } from "@/components/templates/gas-grill/product-card";
+import { StorefrontProductGrid } from "@/components/storefront-product-grid";
 import { CategoryLinks } from "@/components/templates/gas-grill/category-links";
 
 export default function HomePage() {
@@ -28,9 +27,7 @@ export default function HomePage() {
           <div><p className="eyebrow">Find your place at the table</p><h2>A good grill<br />changes the evening.</h2></div>
           <Link className="text-link" href="/collections/freestanding">Shop all grills <span aria-hidden="true">↗</span></Link>
         </div>
-        <div className="product-grid">
-          {products.slice(0, 3).map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}
-        </div>
+        <StorefrontProductGrid featured limit={3} />
       </section>
 
       <section className="category-section page-wrap">
