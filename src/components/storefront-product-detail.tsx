@@ -30,7 +30,7 @@ export function StorefrontProductDetail({ slug }: { slug: string }) {
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><Link href={`/collections/${product.collectionSlug}`}>{product.collection}</Link><span>/</span><span>{product.name}</span></div>
       <div className="product-detail">
         <div className="product-detail-image">
-          <Image src={primaryImage.url} alt={primaryImage.alt} fill priority unoptimized sizes="(max-width: 760px) 100vw, 58vw" />
+          <Image src={primaryImage.url} alt={primaryImage.alt} fill priority unoptimized={!primaryImage.url.startsWith("/")} sizes="(max-width: 760px) 100vw, 58vw" />
           {product.badge && <span className="product-badge">{product.badge}</span>}
         </div>
         <div className="product-detail-copy">

@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SiteHeader } from "@/components/templates/gas-grill/site-header";
 import { SiteFooter } from "@/components/templates/gas-grill/site-footer";
+import { siteUrl } from "@/lib/seo/site-url";
 
 export const metadata: Metadata = {
-  title: { default: "EMBER / FIELD | Outdoor cooking, considered", template: "%s | EMBER / FIELD" },
+  ...(siteUrl ? { metadataBase: siteUrl } : {}),
+  title: { default: "Outdoor cooking, considered | EMBER / FIELD", template: "%s | EMBER / FIELD" },
   description: "Purpose-built gas grills and outdoor cooking equipment for the way you gather.",
 };
 

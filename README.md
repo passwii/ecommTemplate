@@ -10,6 +10,10 @@ Next.js 15 / React 19 单模板独立站 storefront MVP，以户外燃气烤炉�
 - npm。仓库提交了 `package-lock.json`，安装依赖时使用 `npm ci`。
 - 当前本地展示不需要环境变量，也不依赖 Go API 或数据库。
 
+## 站点域名与 SEO
+
+设置 `NEXT_PUBLIC_SITE_URL` 为正式 storefront 的站点 origin（例如 `https://shop.example.com`），不要填写含路由的基础路径。正式域名确认前可以留空：此时页面保留 title/description 和 OG/Twitter 文案，但不输出 canonical 或绝对社交图片 URL，sitemap 为空，避免把演示域名或 localhost 发布成索引地址。配置 origin 后，首页、已发布商品/分类页生成 canonical 与社交预览；`/sitemap.xml` 只列首页以及至少有一个已发布商品的分类和已发布商品，`/robots.txt` 提供 sitemap 地址并禁止抓取管理页。草稿与未知 slug 不进入公开索引。
+
 ## 本地开发
 
 在项目根目录执行：
