@@ -20,11 +20,25 @@ export default async function ProductPage({ params }: Props) {
     <div className="product-page page-wrap">
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><Link href={`/collections/${product.collectionSlug}`}>{product.collection}</Link><span>/</span><span>{product.name}</span></div>
       <div className="product-detail">
-        <div className="product-detail-image"><Image src={product.image} alt={product.imageAlt} fill priority sizes="(max-width: 760px) 100vw, 58vw" /></div>
+        <div className="product-detail-image">
+          <Image src={product.image} alt={product.imageAlt} fill priority sizes="(max-width: 760px) 100vw, 58vw" />
+          {product.badge && <span className="product-badge">{product.badge}</span>}
+        </div>
         <div className="product-detail-copy">
-          <p className="eyebrow">{product.collection}</p><h1>{product.name}</h1><p className="detail-price">{formatPrice(product.price)}</p>
+          <p className="eyebrow">{product.collection}</p>
+          <h1>{product.name}</h1>
+          <p className="detail-price">{formatPrice(product.price)}</p>
+          <p className="detail-summary-lead">{product.summary}</p>
           <p className="detail-summary">{product.description}</p>
-          <div className="detail-specs"><div><span>Burners</span><strong>{product.burners}</strong></div><div><span>Cooking area</span><strong>{product.cookingArea}</strong></div><div><span>Fuel</span><strong>{product.fuel}</strong></div><div><span>Finish</span><strong>{product.finish}</strong></div></div>
+          <section className="detail-specs-section" aria-labelledby="detail-specs-heading">
+            <h2 id="detail-specs-heading">At a glance</h2>
+            <dl className="detail-specs">
+              <div><dt>Burners</dt><dd>{product.burners}</dd></div>
+              <div><dt>Cooking area</dt><dd>{product.cookingArea}</dd></div>
+              <div><dt>Fuel</dt><dd>{product.fuel}</dd></div>
+              <div><dt>Finish</dt><dd>{product.finish}</dd></div>
+            </dl>
+          </section>
           <a className="button button-dark detail-cta" href={`mailto:hello@emberandfield.example?subject=${encodeURIComponent(`Enquiry about ${product.name}`)}`}>Ask about this grill <span aria-hidden="true">↗</span></a>
           <p className="detail-note">Sample product information. No checkout or payment is connected.</p>
         </div>
