@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice, products, type Product } from "@/lib/catalog/mock-data";
+import { getInquiryPath } from "@/lib/contact";
 import { getStoredProducts } from "@/lib/catalog/product-admin";
 
 export function StorefrontProductDetail({ slug }: { slug: string }) {
@@ -44,7 +45,7 @@ export function StorefrontProductDetail({ slug }: { slug: string }) {
             <h2 id="detail-specs-heading">At a glance</h2>
             <dl className="detail-specs">{product.specifications.map((specification) => <div key={specification.name}><dt>{specification.name}</dt><dd>{specification.value}</dd></div>)}</dl>
           </section>}
-          <a className="button button-dark detail-cta" href={`mailto:hello@emberandfield.example?subject=${encodeURIComponent(`Enquiry about ${product.name}`)}`}>Ask about this grill <span aria-hidden="true">↗</span></a>
+          <Link className="button button-dark detail-cta" href={getInquiryPath(product.slug)}>Ask about this grill <span aria-hidden="true">↗</span></Link>
           <p className="detail-note">Sample product information. No checkout or payment is connected.</p>
         </div>
       </div>

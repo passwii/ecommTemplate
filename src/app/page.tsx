@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { StorefrontProductGrid } from "@/components/storefront-product-grid";
 import { CategoryLinks } from "@/components/templates/gas-grill/category-links";
+import { CONTACT_PATH } from "@/lib/contact";
 
 export default function HomePage() {
   return (
@@ -11,7 +12,7 @@ export default function HomePage() {
           <p className="eyebrow">The art of cooking outside</p>
           <h1>Make a little<br />more <em>of outside.</em></h1>
           <p className="hero-description">Thoughtful grills for long lunches, last-minute dinners and everything in between.</p>
-          <Link className="button button-dark" href="#collection">Find your grill <span aria-hidden="true">↗</span></Link>
+          <Link className="button button-dark" href={CONTACT_PATH}>Contact <span aria-hidden="true">↗</span></Link>
           <p className="hero-footnote">Designed for the way you gather.</p>
         </div>
         <div className="hero-image">
@@ -48,9 +49,9 @@ export default function HomePage() {
       </section>
 
       <section className="closing-section page-wrap">
-        <p className="eyebrow">Start with what brings you outside</p>
-        <h2>There is always<br />room for one more.</h2>
-        <Link className="button button-light" href="/collections/freestanding">Explore the collection <span aria-hidden="true">↗</span></Link>
+        <p className="eyebrow">Questions about our grills?</p>
+        <h2>We are here<br />to help.</h2>
+        <Link className="button button-light" href={CONTACT_PATH}>Contact <span aria-hidden="true">↗</span></Link>
       </section>
     </>
   );
