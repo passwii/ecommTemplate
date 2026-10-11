@@ -43,7 +43,7 @@ export default function HomePage() {
           <p className="eyebrow">Made for more than one season</p>
           <h2>Good materials.<br />Better <em>memories.</em></h2>
           <p>Reliable heat, considered details and durable finishes. The practical things that let you spend less time tending equipment and more time around the table.</p>
-          <Link className="text-link" href="/collections/built-in">See how we build <span aria-hidden="true">↗</span></Link>
+          <Link className="text-link" href="/company">Company information <span aria-hidden="true">↗</span></Link>
         </div>
       </section>
 

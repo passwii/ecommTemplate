@@ -143,7 +143,7 @@ export function ProductAdmin() {
     <div className="admin-shell">
       <header className="admin-topbar">
         <Link href="/" className="admin-brand">EMBER <span>/</span> FIELD <small>STUDIO</small></Link>
-        <nav aria-label="Admin navigation"><Link href="/admin/products" aria-current="page">Products</Link><Link href="/">View storefront ↗</Link></nav>
+        <nav aria-label="Admin navigation"><Link href="/admin/products" aria-current="page">Products</Link><Link href="/admin/company">Company content</Link><Link href="/">View storefront ↗</Link></nav>
       </header>
       <main className="admin-main">
         <div className="admin-heading">
