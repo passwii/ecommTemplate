@@ -13,7 +13,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       </Link>
       <div className="product-info">
         <div><p className="product-collection">{product.collection}</p><h3><Link href={`/products/${product.slug}`}>{product.name}</Link></h3><p className="product-summary">{product.summary}</p></div>
-        <p className="product-price">{formatPrice(product.price)}</p>
+        <p className="product-price">{formatPrice(product.price, product.currency)}</p>
       </div>
     </article>
   );
