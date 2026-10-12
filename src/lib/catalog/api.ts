@@ -14,7 +14,8 @@ export type CatalogResult<T> =
 
 export type CompanyContent = ApiCompanyContent;
 
-function apiBaseUrl(): string | undefined {
+/** Server-side catalog API origin, or undefined when not configured. */
+export function catalogApiBaseUrl(): string | undefined {
   const value = process.env.CATALOG_API_URL?.trim();
   if (!value) return undefined;
   try {
@@ -28,11 +29,11 @@ function apiBaseUrl(): string | undefined {
 
 /** True when the storefront is configured to read from a catalog API. */
 export function isCatalogApiConfigured(): boolean {
-  return apiBaseUrl() !== undefined;
+  return catalogApiBaseUrl() !== undefined;
 }
 
 async function fetchCatalog<T>(path: string): Promise<CatalogResult<T>> {
-  const base = apiBaseUrl();
+  const base = catalogApiBaseUrl();
   if (!base) return { ok: false, reason: "unavailable" };
 
   let response: Response;

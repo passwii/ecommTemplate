@@ -45,7 +45,7 @@ export function StorefrontProductDetail({ product }: { product: Product }) {
               {(resource.fileType || resource.description) && <p>{[resource.fileType, resource.description].filter(Boolean).join(" · ")}</p>}
             </li>)}</ul>
           </section>}
-          <a className="button button-dark detail-cta" href={`mailto:hello@emberandfield.example?subject=${encodeURIComponent(`Enquiry about ${product.name}`)}`}>Ask about this grill <span aria-hidden="true">↗</span></a>
+          <Link className="button button-dark detail-cta" href={`/inquiries?product=${encodeURIComponent(product.slug)}`}>Request a quote <span aria-hidden="true">↗</span></Link>
           <p className="detail-note">Sample product information. Confirm specifications, applications and trade terms with the merchant. No checkout or payment is connected.</p>
         </div>
       </div>

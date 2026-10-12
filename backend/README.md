@@ -23,6 +23,13 @@ export HTTP_ADDR='127.0.0.1:8080'
 
 For passwordless local socket/trust auth, use the role and connection settings configured on your machine, while keeping the database name `ecommtemple_dev`. Do not put production credentials in this file or in source control.
 
+### Configuration reference
+
+- `DATABASE_URL` (required): PostgreSQL connection URL.
+- `HTTP_ADDR` (default `:8080`): listen address.
+- `TRUST_PROXY_HEADER` (default `false`): when `true`, inquiry rate limiting keys on the first `X-Forwarded-For` value instead of the transport peer address. Enable **only** when a trusted reverse proxy always overwrites that header — the storefront's `/api/inquiries` route does this. Left off behind a proxy, every visitor shares one rate-limit bucket.
+- `INQUIRY_RATE_LIMIT` (default `5`) and `INQUIRY_RATE_WINDOW` (default `10m`): per-client inquiry submission limit.
+
 ## Migrations
 
 Migrations are explicit and versioned. They are not run automatically on API startup.
@@ -34,7 +41,7 @@ go run ./cmd/storefront-migrate up
 go run ./cmd/storefront-migrate status
 ```
 
-The local migration command refuses URLs whose database is not `ecommtemple_dev` on a loopback host. The initial migration records the selected template identifier; the second creates the catalog and company-content schema. Do not use destructive reset/drop commands against local or production databases.
+The local migration command refuses URLs whose database is not `ecommtemple_dev` on a loopback host. Migrations create the storefront metadata, catalog/company-content schema, and the inquiry schema. Do not use destructive reset/drop commands against local or production databases.
 
 ## Seed sample catalog data
 
@@ -95,8 +102,7 @@ Behavior:
 - `sourcePath` must be a path within this storefront.
 - `productId` must reference a published product; the server stores its own product snapshot (slug/model/name) so later product edits do not rewrite history. An unknown or unpublished product returns `404`.
 - Operational fields (status, owner, activities) are never accepted from visitors; unknown fields are rejected with `400`.
-- `website` is a honeypot field; filling it rejects the submission.
-- `requestId` makes retries idempotent: a replay returns the existing inquiry with `200` instead of creating a duplicate.
+- `referenceCode` is a honeypot field (deliberately non-semantic so browser autofill does not trip it); filling it rejects the submission.- `requestId` makes retries idempotent: a replay returns the existing inquiry with `200` instead of creating a duplicate.
 - Submissions are rate limited per client address (`INQUIRY_RATE_LIMIT` per `INQUIRY_RATE_WINDOW`, default 5 per 10m) and return `429` when exceeded. The limiter is in-memory per instance.
 - Errors use codes `validation_error`, `not_found`, `rate_limited`, `unsupported_media_type`, and `internal_error`. Failures never return a fake success and never expose SQL or stack detail.
 

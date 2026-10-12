@@ -23,6 +23,9 @@ type Deps struct {
 	Catalog   catalog.Repository
 	Inquiries *inquiry.Service
 	Limiter   *inquiry.RateLimiter
+	// TrustProxyHeader keys rate limiting on X-Forwarded-For. Enable only
+	// behind a trusted proxy that overwrites the header.
+	TrustProxyHeader bool
 }
 
 // NewHandler registers public health and catalog endpoints.
@@ -49,7 +52,7 @@ func NewHandler(deps Deps) http.Handler {
 		registerCatalogRoutes(mux, deps.Catalog)
 	}
 	if deps.Inquiries != nil {
-		registerInquiryRoutes(mux, deps.Inquiries, deps.Limiter)
+		registerInquiryRoutes(mux, deps.Inquiries, deps.Limiter, deps.TrustProxyHeader)
 	}
 	return mux
 }

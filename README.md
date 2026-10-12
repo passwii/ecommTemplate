@@ -55,6 +55,8 @@ npm run start      # 启动生产服务器：next start（先运行 build）
 - `/collections/[slug]`：商品分类页；分类由店铺数据库提供，样例种子包含 `built-in`、`freestanding` 和 `compact`。
 - `/products/[slug]`：商品详情页；按已发布商品的 slug 匹配，未知 slug 返回 404。
 - `/company`：公司/信任信息页，内容来自 Catalog API 的 `company-content`。
+- `/inquiries`：询盘/报价请求页；`?product=<slug>` 预填产品。
+- `/api/inquiries`：同源询盘提交代理，转发到 Go API（浏览器不直接访问后端）。
 
 ## 商品、分类与模板入口
 
@@ -73,7 +75,8 @@ npm run start      # 启动生产服务器：next start（先运行 build）
 - 样例商品/分类/公司内容已可通过 `go run ./cmd/storefront-seed` 写入店铺数据库并由上述 API 读取；这些记录标记为 `sample`，不是已核验的真实产品或公司事实。
 - 公开询盘接口 `POST /api/v1/inquiries` 已实现：字段校验、产品快照、隐私同意记录、honeypot、按客户端限流、可选幂等键，并持久化到店铺数据库（询盘与 `created` 活动在同一事务内写入）。
 - 首页、分类页、商品详情页与公司页已在运行时从 Catalog API 读取数据（60 秒缓存）；API 不可用时显示明确的不可用状态，不回退到样例数据。未知商品/分类返回 404。
-- 尚未实现：询盘表单（访客侧 CTA 目前仍是 mailto 链接）、询盘管理后台（认证、列表、状态更新）。
+- 询盘表单已上线于 `/inquiries`：产品详情页与全站 CTA 均指向该页，可按 `?product=<slug>` 预填产品；表单包含校验、提交中/成功/失败状态、隐私说明与隐藏 honeypot。浏览器提交到同源 `/api/inquiries`，由服务端代理到 Go API。
+- 尚未实现：询盘管理后台（认证、列表、状态更新与跟进）。
 - 管理员商品/公司页面写入浏览器 localStorage 的内容仅用于当前浏览器预览，不会发布到共享 storefront、创建公开商品 URL 或进入 sitemap。
 - 每个店铺独立部署与独立 PostgreSQL 数据库已由 `backend/` 的部署边界体现；本地开发复用本机 PostgreSQL 的项目专属库。
 - 当前不提供 checkout、订单处理或支付功能，也未集成第三方电商插件。

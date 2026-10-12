@@ -155,7 +155,7 @@ func TestCreateInquiryRejectsForgedOperationalFields(t *testing.T) {
 }
 
 func TestCreateInquiryRejectsHoneypot(t *testing.T) {
-	body := strings.Replace(validInquiryBody(), `"sourcePath"`, `"website": "http://spam.example.com", "sourcePath"`, 1)
+	body := strings.Replace(validInquiryBody(), `"sourcePath"`, `"referenceCode": "http://spam.example.com", "sourcePath"`, 1)
 	recorder := postInquiry(t, inquiryHandler(&fakeInquiryRepository{}, publishedProducts(), 10), body)
 
 	if recorder.Code != http.StatusBadRequest {
@@ -239,3 +239,32 @@ func TestCreateInquiryDoesNotLeakInternalErrors(t *testing.T) {
 type failingError struct{}
 
 func (f *failingError) Error() string { return `pq: relation "inquiries" does not exist at /srv/db` }
+
+func TestClientKeyIgnoresForwardingHeadersByDefault(t *testing.T) {
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/inquiries", nil)
+	request.RemoteAddr = "203.0.113.9:54321"
+	request.Header.Set("X-Forwarded-For", "198.51.100.7")
+
+	if got := clientKey(request, false); got != "203.0.113.9" {
+		t.Errorf("clientKey(trust=false) = %q, want the peer address", got)
+	}
+}
+
+func TestClientKeyUsesForwardedAddressWhenTrusted(t *testing.T) {
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/inquiries", nil)
+	request.RemoteAddr = "10.0.0.1:54321"
+	request.Header.Set("X-Forwarded-For", "198.51.100.7, 10.0.0.1")
+
+	if got := clientKey(request, true); got != "198.51.100.7" {
+		t.Errorf("clientKey(trust=true) = %q, want the forwarded client address", got)
+	}
+}
+
+func TestClientKeyFallsBackToPeerWhenTrustedButHeaderMissing(t *testing.T) {
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/inquiries", nil)
+	request.RemoteAddr = "10.0.0.1:54321"
+
+	if got := clientKey(request, true); got != "10.0.0.1" {
+		t.Errorf("clientKey(trust=true, no header) = %q, want the peer address", got)
+	}
+}

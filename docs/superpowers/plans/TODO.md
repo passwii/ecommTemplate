@@ -85,9 +85,24 @@
 - 配置 API 构建并启动后：首页/分类页/详情页渲染 seed 数据（Ridge 4-Burner、748 sq in、Brushed stainless steel 等）；`/company` 显示 sample 提示；未知商品 404；sitemap 列出 1 首页 + 3 分类 + 4 商品。
 - 未配置 API 构建并启动后：构建仍成功；首页与公司页显示“暂时不可用”，页面中不含任何样例商品（计数 0）；sitemap 仅剩首页。
 
+### 完成
+
+- [x] Go API 可信代理支持：`TRUST_PROXY_HEADER`，经代理时限流按真实访客而非代理计数（含单元测试）。
+- [x] honeypot 字段改为 `referenceCode`，避免浏览器自动填充误伤真实访客。
+- [x] 同源代理路由 `src/app/api/inquiries/route.ts`：Content-Type 与体积校验，转发 `X-Forwarded-For`，不回传内部错误。
+- [x] `InquiryForm` 客户端组件：必填校验、提交中/成功/失败状态、字段级错误摘要（role=alert + 聚焦）、隐私说明与同意、隐藏 honeypot、键盘与标签可访问性。
+- [x] `/inquiries` 页面：`?product=<slug>` 预填产品并显示产品名。
+- [x] 详情页 CTA 与站点头部/页脚 CTA 改为指向 `/inquiries`。
+
+### 验证记录（询盘表单阶段实测）
+
+- backend：`gofmt -l`（无输出）、`go build ./...`、`go test ./...`、`go vet ./...` 通过。
+- frontend：`npm run lint`、`npm run typecheck`、`npm test`、`npm run build` 通过。
+- 端到端（Next 代理 → Go API → PostgreSQL）：`/inquiries` 渲染表单；`?product=ridge-4-burner` 显示 "Enquiry about"；提交返回 201 并落库（`ridge-4-burner` / DE / 50 / `new`）；字段校验返回 400 + `fields`；同一 `X-Forwarded-For` 第 3 次提交返回 429。
+- 冒烟产生的询盘行已清理，`inquiries` 计数为 0。
+
 ### 进行中
 
-- [ ] 询盘表单（CTA、产品预填、提交反馈）——当前详情页 CTA 仍是 mailto。
 - [ ] 询盘管理后台（认证、列表/详情、状态与跟进）。
 
 ### 验证记录（本阶段实测）

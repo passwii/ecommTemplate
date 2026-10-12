@@ -77,6 +77,28 @@ func TestLoadUsesInquiryRateLimitDefaults(t *testing.T) {
 	}
 }
 
+func TestLoadDefaultsToNotTrustingProxyHeaders(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/ecommtemple_dev?sslmode=disable")
+	t.Setenv("TRUST_PROXY_HEADER", "")
+
+	got, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if got.TrustProxyHeader {
+		t.Error("TrustProxyHeader = true, want false by default")
+	}
+}
+
+func TestLoadRejectsInvalidTrustProxyHeader(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/ecommtemple_dev?sslmode=disable")
+	t.Setenv("TRUST_PROXY_HEADER", "yes-please")
+
+	if _, err := Load(); err == nil {
+		t.Fatal("Load() error = nil, want invalid boolean error")
+	}
+}
+
 func TestLoadRejectsInvalidInquiryRateLimit(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/ecommtemple_dev?sslmode=disable")
 

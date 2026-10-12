@@ -38,17 +38,19 @@ type inquiryPayload struct {
 	PrivacyConsent       inquiryPrivacyPayload `json:"privacyConsent"`
 	SourcePath           string                `json:"sourcePath"`
 	RequestID            string                `json:"requestId"`
-	// Website is a honeypot field: real visitors never fill it.
-	Website string `json:"website"`
+	// ReferenceCode is a honeypot field: real visitors never fill it. The name is
+	// deliberately non-semantic so browser autofill does not trip it.
+	ReferenceCode string `json:"referenceCode"`
 }
 
 type inquiryHandlers struct {
-	service *inquiry.Service
-	limiter *inquiry.RateLimiter
+	service          *inquiry.Service
+	limiter          *inquiry.RateLimiter
+	trustProxyHeader bool
 }
 
-func registerInquiryRoutes(mux *http.ServeMux, service *inquiry.Service, limiter *inquiry.RateLimiter) {
-	handlers := &inquiryHandlers{service: service, limiter: limiter}
+func registerInquiryRoutes(mux *http.ServeMux, service *inquiry.Service, limiter *inquiry.RateLimiter, trustProxyHeader bool) {
+	handlers := &inquiryHandlers{service: service, limiter: limiter, trustProxyHeader: trustProxyHeader}
 	mux.HandleFunc("POST /api/v1/inquiries", handlers.create)
 }
 
@@ -58,7 +60,7 @@ func (h *inquiryHandlers) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if allowed, _ := h.limiter.Allow(clientKey(r)); !allowed {
+	if allowed, _ := h.limiter.Allow(clientKey(r, h.trustProxyHeader)); !allowed {
 		slog.Warn("inquiry submission rate limited")
 		writeError(w, http.StatusTooManyRequests, "rate_limited", "Too many submissions. Please try again later.")
 		return
@@ -96,7 +98,7 @@ func (h *inquiryHandlers) create(w http.ResponseWriter, r *http.Request) {
 		PrivacyNoticeVersion: payload.PrivacyConsent.NoticeVersion,
 		SourcePath:           payload.SourcePath,
 		RequestID:            payload.RequestID,
-		Honeypot:             payload.Website,
+		Honeypot:             payload.ReferenceCode,
 	}
 
 	result, fieldErrors, err := h.service.Create(r.Context(), input)
@@ -134,10 +136,23 @@ func isJSONContentType(value string) bool {
 	return strings.EqualFold(mediaType, "application/json")
 }
 
-// clientKey identifies the submitting client. It uses the transport peer address
-// and deliberately does not trust forwarding headers, which a client could
-// spoof unless a trusted proxy is explicitly configured.
-func clientKey(r *http.Request) string {
+// clientKey identifies the submitting client for rate limiting.
+//
+// By default it uses the transport peer address and deliberately ignores
+// forwarding headers, which a client could spoof. When the API runs behind a
+// trusted reverse proxy that always overwrites X-Forwarded-For, enabling
+// trustProxyHeader makes the limiter key on the real visitor instead of the
+// proxy, so one noisy visitor cannot exhaust everyone's quota.
+func clientKey(r *http.Request, trustProxyHeader bool) string {
+	if trustProxyHeader {
+		if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+			first := strings.TrimSpace(strings.Split(forwarded, ",")[0])
+			if first != "" {
+				return first
+			}
+		}
+	}
+
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr

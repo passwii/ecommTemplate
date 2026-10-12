@@ -42,10 +42,11 @@ func main() {
 	server := &http.Server{
 		Addr: cfg.HTTPAddr,
 		Handler: httpapi.NewHandler(httpapi.Deps{
-			DB:        db,
-			Catalog:   catalogRepo,
-			Inquiries: inquiryService,
-			Limiter:   inquiry.NewRateLimiter(cfg.InquiryRateLimit, cfg.InquiryRateWindow),
+			DB:               db,
+			Catalog:          catalogRepo,
+			Inquiries:        inquiryService,
+			Limiter:          inquiry.NewRateLimiter(cfg.InquiryRateLimit, cfg.InquiryRateWindow),
+			TrustProxyHeader: cfg.TrustProxyHeader,
 		}),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,

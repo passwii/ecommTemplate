@@ -22,6 +22,10 @@ type Config struct {
 	DatabaseURL       string
 	InquiryRateLimit  int
 	InquiryRateWindow time.Duration
+	// TrustProxyHeader makes the API read the client address from the
+	// X-Forwarded-For header. Enable only when a trusted reverse proxy always
+	// overwrites that header.
+	TrustProxyHeader bool
 }
 
 // Load reads and validates runtime settings from the process environment.
@@ -62,10 +66,20 @@ func Load() (Config, error) {
 		rateWindow = parsed
 	}
 
+	trustProxyHeader := false
+	if raw := strings.TrimSpace(os.Getenv("TRUST_PROXY_HEADER")); raw != "" {
+		parsed, err := strconv.ParseBool(raw)
+		if err != nil {
+			return Config{}, errors.New("TRUST_PROXY_HEADER must be true or false")
+		}
+		trustProxyHeader = parsed
+	}
+
 	return Config{
 		HTTPAddr:          httpAddr,
 		DatabaseURL:       databaseURL,
 		InquiryRateLimit:  rateLimit,
 		InquiryRateWindow: rateWindow,
+		TrustProxyHeader:  trustProxyHeader,
 	}, nil
 }
