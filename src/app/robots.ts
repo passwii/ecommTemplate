@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { absoluteSiteUrl, siteUrl } from "@/lib/seo/site-url";
-import { getPublicStorefrontProducts } from "@/lib/catalog/seo";
+import { getIndexableProducts } from "@/lib/catalog/seo";
 
 export default function robots(): MetadataRoute.Robots {
   const robots: MetadataRoute.Robots = {
@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       disallow: "/admin/",
     },
   };
-  const hasPublishedProducts = getPublicStorefrontProducts().length > 0;
+  const hasPublishedProducts = getIndexableProducts().length > 0;
   const sitemapUrl = siteUrl && hasPublishedProducts ? absoluteSiteUrl("/sitemap.xml") : undefined;
   if (sitemapUrl) robots.sitemap = sitemapUrl;
   return robots;

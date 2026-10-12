@@ -14,6 +14,10 @@ Next.js 15 / React 19 单模板独立站 storefront MVP，以户外燃气烤炉�
 
 设置 `NEXT_PUBLIC_SITE_URL` 为正式 storefront 的站点 origin（例如 `https://shop.example.com`），不要填写含路由的基础路径。正式域名确认前可以留空：此时页面保留 title/description 和 OG/Twitter 文案，但不输出 canonical 或绝对社交图片 URL，sitemap 为空，避免把演示域名或 localhost 发布成索引地址。配置 origin 后，首页、已发布商品/分类页生成 canonical 与社交预览；`/sitemap.xml` 只列首页以及至少有一个已发布商品的分类和已发布商品，`/robots.txt` 提供 sitemap 地址并禁止抓取管理页。草稿与未知 slug 不进入公开索引。
 
+## 商品发布数据约定
+
+公开商品页面、分类页和 SEO 清单只读取 `src/lib/catalog/mock-data.ts` 中构建时可用的静态目录。新增或修改公开商品后，需更新该目录并重新构建/部署；已部署站点不支持在后台即时发布新 URL。`/admin/products` 仅供当前浏览器内编辑和预览：其 localStorage 数据不会被服务端、其他访客、静态路由、metadata 或 sitemap 读取，页面中的“published”只表示本地预览状态，不是线上发布信号。请勿将此 MVP 的本地保存描述为生产级后台发布能力。
+
 ## 本地开发
 
 在项目根目录执行：
@@ -53,6 +57,6 @@ npm run start      # 启动生产服务器：next start（先运行 build）
 
 ## 当前能力边界
 
-- 商品和分类来自静态 mock 数据；当前没有连接后台服务或数据库。
+- 商品和分类来自仓库内的静态 mock 数据；当前没有连接后台服务或数据库。管理员页面写入浏览器 localStorage 的内容仅用于当前浏览器预览，不会发布到共享 storefront、创建公开商品 URL 或进入 sitemap。
 - Go API、每个店铺独立部署与独立 PostgreSQL 数据库属于后续规划，不是当前已交付能力。
 - 当前不提供 checkout、订单处理或支付功能，也未集成第三方电商插件。
