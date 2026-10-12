@@ -1,11 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getPublishedCollections } from "@/lib/catalog/mock-data";
 
-const categories = [
-  { slug: "freestanding", name: "Freestanding grills", note: "A complete cooking station", image: "/images/grill-ridge.jpg" },
-  { slug: "built-in", name: "Built-in grills", note: "Made to belong outdoors", image: "/images/grill-summit.jpg" },
-  { slug: "compact", name: "Compact grills", note: "Full flavor, smaller footprint", image: "/images/grill-pocket.jpg" },
-];
+const categoryImages: Record<string, string> = {
+  freestanding: "/images/grill-ridge.jpg",
+  "built-in": "/images/grill-summit.jpg",
+  compact: "/images/grill-pocket.jpg",
+};
+const categoryNotes: Record<string, string> = {
+  freestanding: "A complete cooking station",
+  "built-in": "Made to belong outdoors",
+  compact: "Full flavor, smaller footprint",
+};
+
+const categories = getPublishedCollections().map((collection) => ({
+  ...collection,
+  note: categoryNotes[collection.slug] ?? collection.description,
+  image: categoryImages[collection.slug] ?? "/images/grill-hero.jpg",
+}));
 
 export function CategoryLinks() {
   return (

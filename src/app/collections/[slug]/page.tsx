@@ -1,23 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { collections, getCollection } from "@/lib/catalog/mock-data";
+import { getPublishedCollections, getCollection, getPublishedProducts } from "@/lib/catalog/mock-data";
+import { createPageMetadata } from "@/lib/seo/metadata";
 import { StorefrontCollectionCatalog } from "@/components/storefront-product-grid";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() { return collections.map(({ slug }) => ({ slug })); }
+export const dynamicParams = false;
+
+export function generateStaticParams() { return getPublishedCollections().map(({ slug }) => ({ slug })); }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const collection = getCollection(slug);
-  return collection ? { title: collection.name } : {};
+  if (!collection || !getPublishedCollections().some(({ slug: publishedSlug }) => publishedSlug === slug)) return {};
+
+  const representativeProduct = getPublishedProducts().find((product) => product.collectionSlug === slug);
+  return createPageMetadata({
+    title: collection.name,
+    description: collection.description,
+    pathname: `/collections/${slug}`,
+    image: {
+      url: representativeProduct?.image ?? "/images/grill-hero.jpg",
+      alt: representativeProduct?.imageAlt ?? "Outdoor patio with lounge seating beneath string lights",
+    },
+  });
 }
 
 export default async function CollectionPage({ params }: Props) {
   const { slug } = await params;
   const collection = getCollection(slug);
-  if (!collection) notFound();
+  if (!collection || !getPublishedCollections().some(({ slug: publishedSlug }) => publishedSlug === slug)) notFound();
   return (
     <div className="catalog-page page-wrap">
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>{collection.name}</span></div>

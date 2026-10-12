@@ -54,7 +54,7 @@ export const products: Product[] = [
   {
     id: "grill-01", slug: "ridge-4-burner", name: "Ridge 4-Burner", category: "freestanding", collection: "Freestanding grills", collectionSlug: "freestanding",
     price: 2499, currency: "USD", shortDescription: "Room to cook for the whole table.", summary: "Room to cook for the whole table.", description: "A capable centerpiece for generous weekends outside. Four independently controlled burners give you the range to sear, roast and keep a side warm, all at once.",
-    images: [{ url: "/images/grill-ridge.jpg", alt: "Covered patio with lounge seating and a fire pit, surrounded by trees", sortOrder: 0 }], image: "/images/grill-ridge.jpg", imageAlt: "Covered patio with lounge seating and a fire pit, surrounded by trees",
+    images: [{ url: "/images/grill-ridge.jpg", alt: "Patio lounge seating around an outdoor fire pit beneath a covered, tree-lined terrace", sortOrder: 0 }], image: "/images/grill-ridge.jpg", imageAlt: "Patio lounge seating around an outdoor fire pit beneath a covered, tree-lined terrace",
     specifications: [{ name: "Burners", value: "4" }, { name: "Cooking area", value: "748 sq in" }, { name: "Fuel", value: "Natural gas or propane" }, { name: "Finish", value: "Brushed stainless steel" }],
     badge: "Bestseller", fuel: "Natural gas or propane", burners: 4, cookingArea: "748 sq in", finish: "Brushed stainless steel", status: "published", featured: true, sortOrder: 10,
   },
@@ -84,3 +84,8 @@ export const products: Product[] = [
 export const formatPrice = (price: number, currency = "USD") => new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(price);
 export const getProduct = (slug: string) => products.find((product) => product.slug === slug);
 export const getCollection = (slug: string) => collections.find((collection) => collection.slug === slug);
+export const getPublishedProducts = () => products.filter((product) => product.status === "published");
+export const getPublishedCollections = () => {
+  const publishedCollectionSlugs = new Set(getPublishedProducts().map((product) => product.collectionSlug));
+  return collections.filter((collection) => publishedCollectionSlugs.has(collection.slug));
+};

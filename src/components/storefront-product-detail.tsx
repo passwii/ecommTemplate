@@ -1,27 +1,11 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { formatPrice, products, type Product } from "@/lib/catalog/mock-data";
-import { getStoredProducts } from "@/lib/catalog/product-admin";
+import { formatPrice } from "@/lib/catalog/mock-data";
+import { getIndexableProducts } from "@/lib/catalog/seo";
 
 export function StorefrontProductDetail({ slug }: { slug: string }) {
-  const [product, setProduct] = useState<Product | undefined>(() => products.find((item) => item.slug === slug && item.status === "published"));
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setProduct(getStoredProducts().find((item) => item.slug === slug && item.status === "published"));
-    setLoaded(true);
-  }, [slug]);
-
-  if (!loaded && !product) {
-    return <div className="product-page page-wrap" aria-busy="true"><p className="admin-loading">Loading product…</p></div>;
-  }
-
-  if (!product) {
-    return <div className="product-page page-wrap"><div className="empty-state"><h1>This product is not available.</h1><Link className="text-link" href="/">Explore all grills <span aria-hidden="true">↗</span></Link></div></div>;
-  }
+  const product = getIndexableProducts().find((item) => item.slug === slug);
+  if (!product) return null;
 
   const primaryImage = [...product.images].sort((a, b) => a.sortOrder - b.sortOrder)[0] ?? { url: product.image, alt: product.imageAlt, sortOrder: 0 };
 
@@ -30,7 +14,7 @@ export function StorefrontProductDetail({ slug }: { slug: string }) {
       <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><Link href={`/collections/${product.collectionSlug}`}>{product.collection}</Link><span>/</span><span>{product.name}</span></div>
       <div className="product-detail">
         <div className="product-detail-image">
-          <Image src={primaryImage.url} alt={primaryImage.alt} fill priority unoptimized sizes="(max-width: 760px) 100vw, 58vw" />
+          <Image src={primaryImage.url} alt={primaryImage.alt} fill priority unoptimized={!primaryImage.url.startsWith("/")} sizes="(max-width: 760px) 100vw, 58vw" />
           {product.badge && <span className="product-badge">{product.badge}</span>}
         </div>
         <div className="product-detail-copy">
