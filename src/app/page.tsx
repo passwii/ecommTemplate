@@ -2,7 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { StorefrontProductGrid } from "@/components/storefront-product-grid";
 import { CategoryLinks } from "@/components/templates/gas-grill/category-links";
+import { CatalogUnavailable } from "@/components/catalog-unavailable";
+import { fetchCollections, fetchProducts } from "@/lib/catalog/api";
 import { createPageMetadata } from "@/lib/seo/metadata";
+
+export const revalidate = 60;
 
 export const metadata = createPageMetadata({
   title: "Outdoor cooking, considered",
@@ -11,7 +15,12 @@ export const metadata = createPageMetadata({
   image: { url: "/images/grill-hero.jpg", alt: "Outdoor patio lounge with a fire pit beneath string lights and trees" },
 });
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [featuredProducts, collections] = await Promise.all([
+    fetchProducts({ featured: true, limit: 3 }),
+    fetchCollections(),
+  ]);
+
   return (
     <>
       <section className="hero">
@@ -34,14 +43,14 @@ export default function HomePage() {
           <div><p className="eyebrow">Find your place at the table</p><h2>A good grill<br />changes the evening.</h2></div>
           <Link className="text-link" href="/collections/freestanding">Shop all grills <span aria-hidden="true">↗</span></Link>
         </div>
-        <StorefrontProductGrid featured limit={3} />
+        {featuredProducts.ok ? <StorefrontProductGrid products={featuredProducts.data} /> : <CatalogUnavailable heading="Featured grills are temporarily unavailable." />}
       </section>
 
       <section className="category-section page-wrap">
         <div className="section-heading">
           <div><p className="eyebrow">A place for every kind of outside</p><h2>Find your kind<br />of cooking.</h2></div>
         </div>
-        <CategoryLinks />
+        {collections.ok ? <CategoryLinks collections={collections.data} /> : <CatalogUnavailable heading="Collections are temporarily unavailable." />}
       </section>
 
       <section className="feature-section" id="our-approach">

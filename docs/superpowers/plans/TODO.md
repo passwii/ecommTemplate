@@ -69,10 +69,25 @@
 - API 冒烟：有效提交 201 且落库（含产品快照 `ridge-4-burner`、状态 `new`、国家 US、数量 120、`created` 活动）；幂等重放 200 且不重复建单；未知产品 404；伪造 `status` 400；honeypot 400；缺少同意 400（带字段）；非 JSON 415；超过限流 429。
 - 冒烟产生的测试询盘行已清理，`inquiries` 计数为 0。
 
+### 完成
+
+- [x] 共享内容类型抽取到 `src/lib/catalog/types.ts`。
+- [x] `catalog-view.mjs` 纯映射函数 + 单元测试（排序、缺省字段、空图片过滤、价格判定）。
+- [x] 服务端 API 客户端 `src/lib/catalog/api.ts`：读取 `CATALOG_API_URL`，区分 `not_found` 与 `unavailable`，60 秒缓存，不回退到样例数据。
+- [x] 首页、分类页、商品详情页、公司页改为运行时读取 Catalog API。
+- [x] 不可用状态组件；未知商品/分类返回 404；公司页区分 `sample` 内容。
+- [x] sitemap/robots 改为从 API 取已发布数据，并设 1 小时 revalidate。
+- [x] 模板组件只消费视图模型（props），不再直接读取 mock 数据。
+
+### 验证记录（前端接入阶段实测）
+
+- `npm run lint`、`npm run typecheck`、`npm test`（9 pass）、`npm run build` 均通过且无警告。
+- 配置 API 构建并启动后：首页/分类页/详情页渲染 seed 数据（Ridge 4-Burner、748 sq in、Brushed stainless steel 等）；`/company` 显示 sample 提示；未知商品 404；sitemap 列出 1 首页 + 3 分类 + 4 商品。
+- 未配置 API 构建并启动后：构建仍成功；首页与公司页显示“暂时不可用”，页面中不含任何样例商品（计数 0）；sitemap 仅剩首页。
+
 ### 进行中
 
-- [ ] Next.js 页面接入 Catalog API（前端仍读静态 mock）。
-- [ ] 询盘表单（CTA、产品预填、提交反馈）。
+- [ ] 询盘表单（CTA、产品预填、提交反馈）——当前详情页 CTA 仍是 mailto。
 - [ ] 询盘管理后台（认证、列表/详情、状态与跟进）。
 
 ### 验证记录（本阶段实测）

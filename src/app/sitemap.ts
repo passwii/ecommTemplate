@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getIndexableProducts } from "@/lib/catalog/seo";
+import { getIndexableProducts, getPublishedCollectionSlugs } from "@/lib/catalog/seo";
 import { absoluteSiteUrl, siteUrl } from "@/lib/seo/site-url";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Canonical sitemap entries require the confirmed public store origin.
   if (!siteUrl) return [];
 
@@ -13,9 +15,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: homeUrl, changeFrequency: "weekly", priority: 1 },
   ];
 
-  const publishedProducts = getIndexableProducts();
-  const publishedCollectionSlugs = new Set(publishedProducts.map((product) => product.collectionSlug));
-  for (const slug of publishedCollectionSlugs) {
+  const [publishedProducts, collectionSlugs] = await Promise.all([
+    getIndexableProducts(),
+    getPublishedCollectionSlugs(),
+  ]);
+
+  for (const slug of collectionSlugs) {
     const url = absoluteSiteUrl(`/collections/${slug}`);
     if (url) entries.push({ url, changeFrequency: "weekly", priority: 0.8 });
   }
