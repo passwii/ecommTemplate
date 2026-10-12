@@ -26,6 +26,9 @@ type Config struct {
 	// X-Forwarded-For header. Enable only when a trusted reverse proxy always
 	// overwrites that header.
 	TrustProxyHeader bool
+	// SessionCookieSecure marks the admin session cookie Secure. Enable when the
+	// storefront is served over HTTPS.
+	SessionCookieSecure bool
 }
 
 // Load reads and validates runtime settings from the process environment.
@@ -75,11 +78,21 @@ func Load() (Config, error) {
 		trustProxyHeader = parsed
 	}
 
+	sessionCookieSecure := false
+	if raw := strings.TrimSpace(os.Getenv("SESSION_COOKIE_SECURE")); raw != "" {
+		parsed, err := strconv.ParseBool(raw)
+		if err != nil {
+			return Config{}, errors.New("SESSION_COOKIE_SECURE must be true or false")
+		}
+		sessionCookieSecure = parsed
+	}
+
 	return Config{
-		HTTPAddr:          httpAddr,
-		DatabaseURL:       databaseURL,
-		InquiryRateLimit:  rateLimit,
-		InquiryRateWindow: rateWindow,
-		TrustProxyHeader:  trustProxyHeader,
+		HTTPAddr:            httpAddr,
+		DatabaseURL:         databaseURL,
+		InquiryRateLimit:    rateLimit,
+		InquiryRateWindow:   rateWindow,
+		TrustProxyHeader:    trustProxyHeader,
+		SessionCookieSecure: sessionCookieSecure,
 	}, nil
 }

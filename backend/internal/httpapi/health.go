@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/passwii/ecommTemple/backend/internal/admin"
 	"github.com/passwii/ecommTemple/backend/internal/catalog"
 	"github.com/passwii/ecommTemple/backend/internal/inquiry"
 )
@@ -26,6 +27,12 @@ type Deps struct {
 	// TrustProxyHeader keys rate limiting on X-Forwarded-For. Enable only
 	// behind a trusted proxy that overwrites the header.
 	TrustProxyHeader bool
+	// Admin is the admin authentication service. When nil, admin routes are not registered.
+	Admin *admin.Service
+	// AdminInquiryStore backs the admin inquiry endpoints.
+	AdminInquiryStore inquiry.Repository
+	// AdminCookieSecure marks the session cookie Secure. Enable when served over HTTPS.
+	AdminCookieSecure bool
 }
 
 // NewHandler registers public health and catalog endpoints.
@@ -53,6 +60,9 @@ func NewHandler(deps Deps) http.Handler {
 	}
 	if deps.Inquiries != nil {
 		registerInquiryRoutes(mux, deps.Inquiries, deps.Limiter, deps.TrustProxyHeader)
+	}
+	if deps.Admin != nil && deps.AdminInquiryStore != nil {
+		registerAdminRoutes(mux, deps.Admin, deps.AdminInquiryStore, deps.AdminCookieSecure)
 	}
 	return mux
 }

@@ -15,6 +15,31 @@ func TestValidateLocalDatabaseURLAllowsOnlyLocalDedicatedDatabase(t *testing.T) 
 	}
 }
 
+func TestValidateCommandDatabaseURLAllowsNonLocalWhenExplicitlyEnabled(t *testing.T) {
+	allowed := []string{
+		"postgres://user:secret@db.example.com:5432/store_prod",
+		"postgres://user:secret@10.0.0.5:5432/store_prod",
+	}
+	for _, raw := range allowed {
+		if err := ValidateCommandDatabaseURL(raw, true); err != nil {
+			t.Errorf("ValidateCommandDatabaseURL(%q, true) error = %v, want nil", raw, err)
+		}
+	}
+
+	rejected := []string{"", "postgres://user:secret@db.example.com:5432", "mysql://user:secret@localhost:3306/store"}
+	for _, raw := range rejected {
+		if err := ValidateCommandDatabaseURL(raw, true); err == nil {
+			t.Errorf("ValidateCommandDatabaseURL(%q, true) error = nil, want rejection", raw)
+		}
+	}
+}
+
+func TestValidateCommandDatabaseURLStaysLocalByDefault(t *testing.T) {
+	if err := ValidateCommandDatabaseURL("postgres://user:secret@db.example.com:5432/store_prod", false); err == nil {
+		t.Fatal("ValidateCommandDatabaseURL(remote, false) error = nil, want rejection")
+	}
+}
+
 func TestValidateLocalDatabaseURLRejectsOtherTargets(t *testing.T) {
 	rejected := []string{
 		"",

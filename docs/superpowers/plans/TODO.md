@@ -101,9 +101,30 @@
 - 端到端（Next 代理 → Go API → PostgreSQL）：`/inquiries` 渲染表单；`?product=ridge-4-burner` 显示 "Enquiry about"；提交返回 201 并落库（`ridge-4-burner` / DE / 50 / `new`）；字段校验返回 400 + `fields`；同一 `X-Forwarded-For` 第 3 次提交返回 429。
 - 冒烟产生的询盘行已清理，`inquiries` 计数为 0。
 
-### 进行中
+### 完成
 
-- [ ] 询盘管理后台（认证、列表/详情、状态与跟进）。
+- [x] 管理端 schema migration（`00004`）：`admin_users`、`admin_sessions`（令牌仅存哈希）。
+- [x] `admin` 包：bcrypt 密码哈希与强度校验、不透明会话令牌、登录/校验/登出服务。
+- [x] 管理端 API：会话端点 + 询盘列表/详情/更新/活动，全部经服务端鉴权中间件保护。
+- [x] `cmd/storefront-admin create-admin`：首个管理员引导；默认仅限本地库，生产需 `ALLOW_REMOTE_DATABASE=true` 显式开启；拒绝弱密码与重复邮箱。
+- [x] inquiry 包管理能力：List（状态/关键词筛选 + 总数）、Update（状态变更写入活动历史）、AddActivity、ListActivities。
+- [x] Next.js 管理界面：`/admin/login`、`/admin/inquiries`（筛选/分页）、`/admin/inquiries/[id]`（详情、跟进、活动时间线、登出）。
+- [x] 同源代理 `/api/admin/*`：仅允许 GET/POST/PATCH/DELETE，拒绝路径穿越，转发会话 cookie。
+- [x] `SESSION_COOKIE_SECURE` 配置；cookie 为 HttpOnly + SameSite=Lax。
+
+### 验证记录（管理后台阶段实测）
+
+- backend：`gofmt -l`（无输出）、`go build ./...`、`go test ./...`、`go vet ./...` 通过。
+- frontend：`npm run lint`、`npm run typecheck`、`npm test`、`npm run build` 通过。
+- 端到端：未登录访问列表 307 → `/admin/login`；登录 200 且下发 HttpOnly cookie；错误密码 401；伪造 cookie 401；登出后 401；公开询盘 201 后出现在列表；状态更新 200 并生成 "Status changed from new to quoted" 历史；活动记录 201；详情页显示新状态与历史。
+- 管理 CLI：创建成功；重复邮箱、弱密码、未开启远程开关的目标库均被拒绝。
+- 冒烟产生的询盘与管理员账号已清理（`inquiries=0 admins=0`）。
+
+### 后续（按真实需求再排）
+
+- [ ] 附件上传与隔离存储。
+- [ ] 可配置运营字段（出现真实需求后）。
+- [ ] CSV/报表、密码轮转与备份恢复演练文档。
 
 ### 验证记录（本阶段实测）
 

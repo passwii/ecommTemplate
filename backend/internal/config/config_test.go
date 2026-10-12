@@ -99,6 +99,28 @@ func TestLoadRejectsInvalidTrustProxyHeader(t *testing.T) {
 	}
 }
 
+func TestLoadDefaultsSessionCookieToNotSecure(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/ecommtemple_dev?sslmode=disable")
+	t.Setenv("SESSION_COOKIE_SECURE", "")
+
+	got, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if got.SessionCookieSecure {
+		t.Error("SessionCookieSecure = true, want false by default for local http")
+	}
+}
+
+func TestLoadRejectsInvalidSessionCookieSecure(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/ecommtemple_dev?sslmode=disable")
+	t.Setenv("SESSION_COOKIE_SECURE", "maybe")
+
+	if _, err := Load(); err == nil {
+		t.Fatal("Load() error = nil, want invalid boolean error")
+	}
+}
+
 func TestLoadRejectsInvalidInquiryRateLimit(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/ecommtemple_dev?sslmode=disable")
 

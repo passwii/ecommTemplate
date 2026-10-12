@@ -47,6 +47,22 @@ func (m *memoryRepository) Get(_ context.Context, id string) (Inquiry, error) {
 	return Inquiry{}, ErrNotFound
 }
 
+func (m *memoryRepository) List(context.Context, ListFilter) ([]Inquiry, int, error) {
+	return nil, 0, nil
+}
+
+func (m *memoryRepository) Update(context.Context, string, UpdateInput, string) (Inquiry, error) {
+	return Inquiry{}, ErrNotFound
+}
+
+func (m *memoryRepository) ListActivities(context.Context, string, int) ([]Activity, error) {
+	return nil, nil
+}
+
+func (m *memoryRepository) AddActivity(_ context.Context, activity Activity) (Activity, error) {
+	return activity, nil
+}
+
 type stubProducts struct {
 	product catalog.Product
 	err     error

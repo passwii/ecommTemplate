@@ -20,6 +20,15 @@ var localHostnames = map[string]bool{
 // the dedicated, loopback-hosted development database. It never inspects or
 // returns credentials.
 func ValidateLocalDatabaseURL(raw string) error {
+	return ValidateCommandDatabaseURL(raw, false)
+}
+
+// ValidateCommandDatabaseURL validates a database URL for a maintenance command.
+// Local-only commands pass allowNonLocal=false. Commands that must run against a
+// deployed store (such as creating the first admin) pass true, which still
+// requires a valid PostgreSQL URL but no longer restricts the host or database
+// name. Enabling it is an explicit, deliberate action.
+func ValidateCommandDatabaseURL(raw string, allowNonLocal bool) error {
 	if strings.TrimSpace(raw) == "" {
 		return errors.New("DATABASE_URL is required")
 	}
@@ -29,6 +38,12 @@ func ValidateLocalDatabaseURL(raw string) error {
 	}
 	if parsed.Scheme != "postgres" && parsed.Scheme != "postgresql" {
 		return errors.New("DATABASE_URL must use the postgres scheme")
+	}
+	if parsed.Path == "/" || parsed.Path == "" {
+		return errors.New("DATABASE_URL must include a database name")
+	}
+	if allowNonLocal {
+		return nil
 	}
 	if !localHostnames[parsed.Hostname()] {
 		return errors.New("local commands are restricted to a loopback database host")

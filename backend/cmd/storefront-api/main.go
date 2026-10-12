@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/passwii/ecommTemple/backend/internal/admin"
 	"github.com/passwii/ecommTemple/backend/internal/catalog"
 	"github.com/passwii/ecommTemple/backend/internal/config"
 	"github.com/passwii/ecommTemple/backend/internal/database"
@@ -38,15 +39,19 @@ func main() {
 	catalogRepo := catalog.NewPostgresRepository(db)
 	inquiryRepo := inquiry.NewPostgresRepository(db)
 	inquiryService := inquiry.NewService(inquiryRepo, catalogRepo)
+	adminService := admin.NewService(admin.NewPostgresRepository(db))
 
 	server := &http.Server{
 		Addr: cfg.HTTPAddr,
 		Handler: httpapi.NewHandler(httpapi.Deps{
-			DB:               db,
-			Catalog:          catalogRepo,
-			Inquiries:        inquiryService,
-			Limiter:          inquiry.NewRateLimiter(cfg.InquiryRateLimit, cfg.InquiryRateWindow),
-			TrustProxyHeader: cfg.TrustProxyHeader,
+			DB:                db,
+			Catalog:           catalogRepo,
+			Inquiries:         inquiryService,
+			Limiter:           inquiry.NewRateLimiter(cfg.InquiryRateLimit, cfg.InquiryRateWindow),
+			TrustProxyHeader:  cfg.TrustProxyHeader,
+			Admin:             adminService,
+			AdminInquiryStore: inquiryRepo,
+			AdminCookieSecure: cfg.SessionCookieSecure,
 		}),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,

@@ -57,6 +57,9 @@ npm run start      # 启动生产服务器：next start（先运行 build）
 - `/company`：公司/信任信息页，内容来自 Catalog API 的 `company-content`。
 - `/inquiries`：询盘/报价请求页；`?product=<slug>` 预填产品。
 - `/api/inquiries`：同源询盘提交代理，转发到 Go API（浏览器不直接访问后端）。
+- `/admin/login`：管理端登录。
+- `/admin/inquiries`、`/admin/inquiries/[id]`：询盘列表与详情（需登录）。
+- `/api/admin/*`：管理端同源代理，转发会话 cookie 到 Go API。
 
 ## 商品、分类与模板入口
 
@@ -76,7 +79,8 @@ npm run start      # 启动生产服务器：next start（先运行 build）
 - 公开询盘接口 `POST /api/v1/inquiries` 已实现：字段校验、产品快照、隐私同意记录、honeypot、按客户端限流、可选幂等键，并持久化到店铺数据库（询盘与 `created` 活动在同一事务内写入）。
 - 首页、分类页、商品详情页与公司页已在运行时从 Catalog API 读取数据（60 秒缓存）；API 不可用时显示明确的不可用状态，不回退到样例数据。未知商品/分类返回 404。
 - 询盘表单已上线于 `/inquiries`：产品详情页与全站 CTA 均指向该页，可按 `?product=<slug>` 预填产品；表单包含校验、提交中/成功/失败状态、隐私说明与隐藏 honeypot。浏览器提交到同源 `/api/inquiries`，由服务端代理到 Go API。
-- 尚未实现：询盘管理后台（认证、列表、状态更新与跟进）。
+- 轻量询盘后台已上线于 `/admin/login` 与 `/admin/inquiries`：Go API 负责登录（bcrypt 密码哈希 + 仅存哈希的不透明会话令牌 + HttpOnly/SameSite=Lax cookie），Next.js 通过同源 `/api/admin/*` 代理转发会话。支持列表（按状态/关键词筛选、分页）、详情、状态更新、负责人、下一步跟进与活动记录；状态变更写入活动历史。首个管理员用 `backend/cmd/storefront-admin` 创建，详见 [`backend/README.md`](./backend/README.md)。
+- 仍未实现：附件上传、可配置运营字段、CSV/报表；`/admin/products` 与 `/admin/company` 仍是浏览器本地预览。
 - 管理员商品/公司页面写入浏览器 localStorage 的内容仅用于当前浏览器预览，不会发布到共享 storefront、创建公开商品 URL 或进入 sitemap。
 - 每个店铺独立部署与独立 PostgreSQL 数据库已由 `backend/` 的部署边界体现；本地开发复用本机 PostgreSQL 的项目专属库。
 - 当前不提供 checkout、订单处理或支付功能，也未集成第三方电商插件。

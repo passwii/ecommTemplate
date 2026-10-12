@@ -29,6 +29,7 @@ For passwordless local socket/trust auth, use the role and connection settings c
 - `HTTP_ADDR` (default `:8080`): listen address.
 - `TRUST_PROXY_HEADER` (default `false`): when `true`, inquiry rate limiting keys on the first `X-Forwarded-For` value instead of the transport peer address. Enable **only** when a trusted reverse proxy always overwrites that header — the storefront's `/api/inquiries` route does this. Left off behind a proxy, every visitor shares one rate-limit bucket.
 - `INQUIRY_RATE_LIMIT` (default `5`) and `INQUIRY_RATE_WINDOW` (default `10m`): per-client inquiry submission limit.
+- `SESSION_COOKIE_SECURE` (default `false`): marks the admin session cookie `Secure`. Enable when the storefront is served over HTTPS.
 
 ## Migrations
 
@@ -115,6 +116,44 @@ Success responses:
 ```
 
 New inquiries start in the `new` status with a `created` activity recorded by `system`. Inquiry management (authentication, list/detail, status changes, notes) is a later phase and is not implemented yet.
+
+## Admin sign-in and inquiry management
+
+The Go API owns admin authentication. It stores bcrypt password hashes and
+opaque session tokens (only the token hash is persisted). Create the first admin
+once, against the local development database:
+
+```sh
+cd backend
+ADMIN_EMAIL='owner@example.com' ADMIN_PASSWORD='at least 12 characters' go run ./cmd/storefront-admin create-admin
+```
+
+For a deployed store the same command must be pointed at that store's database
+and requires the explicit opt-in, because it is the only command allowed to leave
+the local database:
+
+```sh
+ALLOW_REMOTE_DATABASE=true DATABASE_URL='postgres://...' ADMIN_EMAIL='owner@example.com' go run ./cmd/storefront-admin create-admin
+```
+
+Do not pass the password as a command-line argument; use `ADMIN_PASSWORD` or pipe
+it on stdin. Rotate the password by creating a new admin and removing the old one.
+
+Admin endpoints (all require a valid session except login):
+
+- `POST /api/v1/admin/sessions` — sign in; sets an HttpOnly, SameSite=Lax session cookie.
+- `DELETE /api/v1/admin/sessions` — sign out and clear the cookie.
+- `GET /api/v1/admin/session` — current admin identity.
+- `GET /api/v1/admin/inquiries?status=&q=&limit=&offset=` — list with total count.
+- `GET /api/v1/admin/inquiries/{id}` — detail plus activity history.
+- `PATCH /api/v1/admin/inquiries/{id}` — status, owner, next action/date, loss reason.
+- `POST /api/v1/admin/inquiries/{id}/activities` — append a `note` or `contact` activity.
+
+Operational fields can only be changed here; the public inquiry endpoint never
+accepts them. Status changes are recorded as history entries with the acting
+admin. Unauthenticated requests receive `401 unauthorized`.
+
+Set `SESSION_COOKIE_SECURE=true` when the storefront is served over HTTPS.
 
 ## Validate
 

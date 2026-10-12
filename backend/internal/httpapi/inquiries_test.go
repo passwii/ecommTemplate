@@ -51,6 +51,22 @@ func (f *fakeInquiryRepository) Get(_ context.Context, id string) (inquiry.Inqui
 	return inquiry.Inquiry{}, inquiry.ErrNotFound
 }
 
+func (f *fakeInquiryRepository) List(context.Context, inquiry.ListFilter) ([]inquiry.Inquiry, int, error) {
+	return nil, 0, nil
+}
+
+func (f *fakeInquiryRepository) Update(context.Context, string, inquiry.UpdateInput, string) (inquiry.Inquiry, error) {
+	return inquiry.Inquiry{}, inquiry.ErrNotFound
+}
+
+func (f *fakeInquiryRepository) ListActivities(context.Context, string, int) ([]inquiry.Activity, error) {
+	return nil, nil
+}
+
+func (f *fakeInquiryRepository) AddActivity(_ context.Context, activity inquiry.Activity) (inquiry.Activity, error) {
+	return activity, nil
+}
+
 func inquiryHandler(repo *fakeInquiryRepository, products catalog.Repository, limit int) http.Handler {
 	service := inquiry.NewService(repo, products)
 	return NewHandler(Deps{
