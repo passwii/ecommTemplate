@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+
+	"github.com/passwii/ecommTemple/backend/internal/database"
 )
 
 //go:embed migrations/*.sql
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	databaseURL := os.Getenv("DATABASE_URL")
-	if err := validateDatabaseURL(databaseURL); err != nil {
+	if err := database.ValidateLocalDatabaseURL(databaseURL); err != nil {
 		slog.Error("invalid database configuration", "error", err)
 		os.Exit(1)
 	}
@@ -94,17 +94,6 @@ func runMigrationCommand(ctx context.Context, db *sql.DB, command string) error 
 		}
 	default:
 		return errors.New("unsupported migration command")
-	}
-	return nil
-}
-
-func validateDatabaseURL(raw string) error {
-	if strings.TrimSpace(raw) == "" {
-		return errors.New("DATABASE_URL is required")
-	}
-	parsed, err := url.Parse(raw)
-	if err != nil || parsed.Scheme != "postgres" && parsed.Scheme != "postgresql" || parsed.Hostname() != "localhost" && parsed.Hostname() != "127.0.0.1" && parsed.Hostname() != "::1" || parsed.Path != "/ecommtemple_dev" {
-		return errors.New("local migrations are restricted to the ecommtemple_dev database")
 	}
 	return nil
 }

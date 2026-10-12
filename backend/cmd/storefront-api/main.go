@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/passwii/ecommTemple/backend/internal/catalog"
 	"github.com/passwii/ecommTemple/backend/internal/config"
 	"github.com/passwii/ecommTemple/backend/internal/database"
 	"github.com/passwii/ecommTemple/backend/internal/httpapi"
@@ -35,7 +36,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           httpapi.NewHandler(db),
+		Handler:           httpapi.NewHandler(httpapi.Deps{DB: db, Catalog: catalog.NewPostgresRepository(db)}),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      15 * time.Second,

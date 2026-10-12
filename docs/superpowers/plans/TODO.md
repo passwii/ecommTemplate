@@ -37,9 +37,26 @@
 - [x] 更新 root/backend README，明确后端基础已存在、catalog 和询盘能力仍未实现。
 - [x] 在隔离分支 `feat/backend-foundation` 工作；原 `main` 仅有 worktree ignore 规则提交。
 
+### 完成
+
+- [x] Catalog/company schema migration（`00002`）：collections、products、company_content。
+- [x] `catalog` 包：领域模型、安全资源 URL 规则、仓储接口与 PostgreSQL 只读实现。
+- [x] 只读 API：`/api/v1/collections`、`/api/v1/collections/{slug}`、`/api/v1/products`、`/api/v1/products/{slug}`、`/api/v1/company-content`。
+- [x] 幂等 seed 命令 `cmd/storefront-seed`，写入标记为 `sample` 的示例数据。
+- [x] 共享本地数据库守卫 `database.ValidateLocalDatabaseURL`，迁移与 seed 均限制 loopback + `ecommtemple_dev`。
+- [x] README（root/backend）更新 catalog 端点、seed 用法与能力边界。
+
+### 验证记录（Catalog 阶段实测）
+
+- backend：`gofmt`、`go build ./...`、`go test ./...`、`go vet ./...` 全部通过。
+- catalog 集成测试在 `ecommtemple_dev` 事务内运行并回滚（草稿排除、未知 slug、过滤/limit、不安全 URL 丢弃、seed 幂等）。
+- API 冒烟：collections/products/company-content 返回 seed 数据；未知 slug → 404；`limit=500` → 400。
+- `go run ./cmd/storefront-seed` 连续执行两次无重复数据。
+
 ### 进行中
 
-- [ ] 后续阶段：Catalog/company schema、seed 数据、只读 API（下一阶段从 Issue 3 开始）。
+- [ ] Next.js 页面接入 Catalog API（下一阶段，前端仍读静态 mock）。
+- [ ] 询盘公开 API 与持久化。
 
 ### 验证记录（本阶段实测）
 

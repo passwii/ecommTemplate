@@ -11,7 +11,7 @@ import (
 )
 
 func TestLivenessReturnsOKWithoutDatabase(t *testing.T) {
-	handler := NewHandler(nil)
+	handler := NewHandler(Deps{})
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/health/live", nil))
 
@@ -24,7 +24,7 @@ func TestLivenessReturnsOKWithoutDatabase(t *testing.T) {
 }
 
 func TestReadinessReturnsUnavailableWithoutDatabase(t *testing.T) {
-	handler := NewHandler(nil)
+	handler := NewHandler(Deps{})
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/health/ready", nil))
 
@@ -50,7 +50,7 @@ func TestReadinessReturnsUnavailableWhenDatabaseCannotPing(t *testing.T) {
 	defer db.Close()
 	db.SetConnMaxLifetime(time.Millisecond)
 
-	handler := NewHandler(db)
+	handler := NewHandler(Deps{DB: db})
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/health/ready", nil))
 

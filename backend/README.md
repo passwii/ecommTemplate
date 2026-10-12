@@ -34,7 +34,18 @@ go run ./cmd/storefront-migrate up
 go run ./cmd/storefront-migrate status
 ```
 
-The local migration command refuses URLs whose database path is not `/ecommtemple_dev`. The initial migration records the selected template identifier. Do not use destructive reset/drop commands against local or production databases.
+The local migration command refuses URLs whose database is not `ecommtemple_dev` on a loopback host. The initial migration records the selected template identifier; the second creates the catalog and company-content schema. Do not use destructive reset/drop commands against local or production databases.
+
+## Seed sample catalog data
+
+The seed command is idempotent and only targets the local `ecommtemple_dev` database. It writes the reviewed sample catalog (collections, products) and clearly-marked sample company content.
+
+```sh
+cd backend
+go run ./cmd/storefront-seed
+```
+
+Sample records are marked `content_status = sample`. They are not verified real-world product or company facts. Do not present sample MOQ, lead time, certification, or factory claims as fact.
 
 ## Run API
 
@@ -43,10 +54,20 @@ cd backend
 go run ./cmd/storefront-api
 ```
 
+Health:
+
 - `GET http://127.0.0.1:8080/health/live` reports process liveness.
 - `GET http://127.0.0.1:8080/health/ready` reports database readiness.
 
-Health endpoints return only a generic status; they do not return the database URL or low-level connection error.
+Public read-only catalog (published records only; drafts and unknown slugs return `404`):
+
+- `GET /api/v1/collections`
+- `GET /api/v1/collections/{slug}`
+- `GET /api/v1/products?collection={slug}&featured={true|false}&limit={1..100}`
+- `GET /api/v1/products/{slug}`
+- `GET /api/v1/company-content`
+
+Responses use a `{"data": ...}` envelope. Errors use `{"error": {"code", "message", "fields?"}}` with codes `not_found`, `invalid_query`, and `internal_error`. Health and error responses never return the database URL or internal error detail.
 
 ## Validate
 
@@ -57,4 +78,6 @@ go test ./...
 go vet ./...
 ```
 
-Catalog, inquiry intake, admin authentication and management endpoints are future phases and must not be considered available based on this foundation.
+Catalog integration tests run against `ecommtemple_dev` inside a rolled-back transaction and are skipped when `DATABASE_URL` is unset.
+
+Inquiry intake, admin authentication and management endpoints are future phases and are not available yet.

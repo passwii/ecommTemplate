@@ -57,8 +57,9 @@ npm run start      # 启动生产服务器：next start（先运行 build）
 
 ## 当前能力边界
 
-- 后端基础已新增于 `backend/`：使用 Go API 骨架、本机 PostgreSQL 项目专属数据库和显式 migration，提供 `/health/live` 与 `/health/ready`。本地启动细节见 [`backend/README.md`](./backend/README.md)。
-- 商品、分类与公司内容仍来自仓库内静态 mock 数据，catalog API 尚未实现或接入前端；询盘 API、询盘持久化和 CRM 管理页也尚未实现。
+- 后端基础已新增于 `backend/`：Go API、本机 PostgreSQL 项目专属数据库和显式 migration，提供 `/health/live`、`/health/ready`，以及只读的 `/api/v1/collections`、`/api/v1/products`、`/api/v1/company-content` 端点。本地启动细节见 [`backend/README.md`](./backend/README.md)。
+- 样例商品/分类/公司内容已可通过 `go run ./cmd/storefront-seed` 写入店铺数据库并由上述 API 读取；这些记录标记为 `sample`，不是已核验的真实产品或公司事实。
+- **前端页面仍读取仓库内静态 mock 数据**，尚未接入 Catalog API；询盘 API、询盘持久化和 CRM 管理页也尚未实现。
 - 管理员商品/公司页面写入浏览器 localStorage 的内容仅用于当前浏览器预览，不会发布到共享 storefront、创建公开商品 URL 或进入 sitemap。
 - Go API、每个店铺独立部署与独立 PostgreSQL 数据库属于后续规划，不是当前已交付能力。
 - 当前不提供 checkout、订单处理或支付功能，也未集成第三方电商插件。
