@@ -75,7 +75,7 @@ export function ProductAdmin() {
     const existing = items.find((item) => item.id === draft.id);
     const saved = draftToProduct(draft, existing);
     const next = existing ? items.map((item) => item.id === saved.id ? saved : item) : [...items, saved];
-    persist(next, `Saved ${saved.name} as ${saved.status}.`);
+    persist(next, `Saved ${saved.name} to this browser preview as ${saved.status}.`);
     setDraft(null);
   }
 
@@ -85,12 +85,12 @@ export function ProductAdmin() {
       const validation = validateProductDraft(productToDraft(product));
       const firstError = Object.values(validation)[0];
       if (firstError) {
-        setNotice(`Cannot publish ${product.name}: ${firstError}`);
+        setNotice(`Cannot mark ${product.name} as published in this preview: ${firstError}`);
         return;
       }
     }
     const next = items.map((item): Product => item.id === product.id ? { ...item, status } : item);
-    persist(next, `${product.name} ${status === "published" ? "published" : "unpublished"}.`);
+    persist(next, `${product.name} set to ${status} in the local preview only.`);
   }
 
   function resetCatalog() {
@@ -175,14 +175,14 @@ export function ProductAdmin() {
     <div className="admin-shell">
       <header className="admin-topbar">
         <Link href="/" className="admin-brand">EMBER <span>/</span> FIELD <small>STUDIO</small></Link>
-        <nav aria-label="Admin navigation"><Link href="/admin/products" aria-current="page">Products</Link><Link href="/">View storefront ↗</Link></nav>
+        <nav aria-label="Admin navigation"><Link href="/admin/products" aria-current="page">Products</Link><Link href="/admin/company">Company content</Link><Link href="/">View storefront ↗</Link></nav>
       </header>
       <main className="admin-main">
         <div className="admin-heading">
-          <div><p className="admin-eyebrow">CATALOG MANAGEMENT · GAS-GRILL TEMPLATE</p><h1>Products</h1><p>Curate what appears in your storefront.</p></div>
+          <div><p className="admin-eyebrow">CATALOG MANAGEMENT · GAS-GRILL TEMPLATE</p><h1>Products</h1><p>Preview catalog edits in this browser.</p></div>
           <button className="admin-primary" onClick={startCreate}>＋ <span>New product</span></button>
         </div>
-        <div className="admin-callout"><span className="admin-callout-mark">i</span><p>Sample catalog content is illustrative; confirm product facts and trade terms with the merchant before publishing. This demo saves to this browser only, with no sign-in or server persistence; changes won’t sync across devices and clearing browser data resets them.</p></div>
+        <div className="admin-callout"><span className="admin-callout-mark">i</span><p>This browser-only demo has no sign-in or server persistence. Sample catalog content is illustrative; confirm product facts and trade terms with the merchant before publishing. Draft/published status here is only a local preview: it does not publish products to the shared storefront or sitemap. Visitor pages and public URLs use the repository catalog. Changes do not sync across devices and clearing browser data resets them.</p></div>
         {notice && <p className="admin-notice" role="status">{notice}</p>}
         <section className="admin-table-wrap" aria-label="Product catalog">
           <div className="admin-table-head"><span>PRODUCT <small>{items.length} TOTAL</small></span><span>COLLECTION</span><span>PRICE</span><span>STATUS</span><span>ACTIONS</span></div>
@@ -192,10 +192,10 @@ export function ProductAdmin() {
               <div className="admin-collection-cell">{product.collection}</div>
               <div className="admin-price-cell">{new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency, maximumFractionDigits: 0 }).format(product.price)}</div>
               <div><span className={`admin-status ${product.status}`}><i />{product.status}</span></div>
-              <div className="admin-actions"><button onClick={() => startEdit(product)}>Edit</button><button className="admin-publish" onClick={() => toggleStatus(product)}>{product.status === "published" ? "Unpublish" : "Publish"}</button></div>
+              <div className="admin-actions"><button onClick={() => startEdit(product)}>Edit</button><button className="admin-publish" onClick={() => toggleStatus(product)}>{product.status === "published" ? "Set preview to draft" : "Set preview to published"}</button></div>
             </article>
           ))}
-          {!sortedItems.length && <div className="admin-empty"><strong>No products yet.</strong><p>Create a draft to start building your catalog.</p><button className="admin-secondary" onClick={startCreate}>Create first product</button></div>}
+          {!sortedItems.length && <div className="admin-empty"><strong>No products yet.</strong><p>Create a local preview item to explore catalog content.</p><button className="admin-secondary" onClick={startCreate}>Create first product</button></div>}
         </section>
         <div className="admin-list-footer"><span>Showing {items.length} products · Sorted by display order</span><button onClick={resetCatalog}>Reset sample catalog</button></div>
       </main>
@@ -236,15 +236,15 @@ export function ProductAdmin() {
                   {errors.resources && <small className="admin-error">{errors.resources}</small>}
                 </div>
               </fieldset>
-              <fieldset className="admin-fieldset"><legend>Pricing & publishing</legend>
+              <fieldset className="admin-fieldset"><legend>Pricing & preview status</legend>
                 <div className="admin-two-col"><label className="admin-field">Price<input type="number" min="0.01" step="0.01" value={draft.price || ""} onChange={(event) => updateDraft("price", Number(event.target.value))} placeholder="2499" />{errors.price && <small className="admin-error">{errors.price}</small>}</label><label className="admin-field">Currency<select value={draft.currency} onChange={(event) => updateDraft("currency", event.target.value)}><option value="USD">USD — US Dollar</option><option value="CAD">CAD — Canadian Dollar</option><option value="EUR">EUR — Euro</option><option value="GBP">GBP — Pound Sterling</option></select></label></div>
                 <label className="admin-field">Compare-at price <span className="admin-optional">OPTIONAL</span><input type="number" min="0" step="0.01" value={draft.compareAtPrice ?? ""} onChange={(event) => updateDraft("compareAtPrice", event.target.value ? Number(event.target.value) : undefined)} placeholder="Leave blank to hide" /></label>
                 <label className="admin-field">SKU <span className="admin-optional">OPTIONAL</span><input value={draft.sku ?? ""} onChange={(event) => updateDraft("sku", event.target.value)} placeholder="e.g. EF-RDG-04" /></label>
-                <div className="admin-two-col"><label className="admin-field">Display order<input type="number" value={draft.sortOrder} onChange={(event) => updateDraft("sortOrder", Number(event.target.value))} /></label><label className="admin-field">Status<select value={draft.status} onChange={(event) => updateDraft("status", event.target.value as ProductDraft["status"])}><option value="draft">Draft</option><option value="published">Published</option></select></label></div>
-                <label className="admin-checkbox"><input type="checkbox" checked={draft.featured} onChange={(event) => updateDraft("featured", event.target.checked)} /><span>Feature this product on the storefront</span></label>
+                <div className="admin-two-col"><label className="admin-field">Display order<input type="number" value={draft.sortOrder} onChange={(event) => updateDraft("sortOrder", Number(event.target.value))} /></label><label className="admin-field">Status<select value={draft.status} onChange={(event) => updateDraft("status", event.target.value as ProductDraft["status"])}><option value="draft">Draft (local preview)</option><option value="published">Published (local preview only)</option></select></label></div>
+                <label className="admin-checkbox"><input type="checkbox" checked={draft.featured} onChange={(event) => updateDraft("featured", event.target.checked)} /><span>Feature this product in the local preview</span></label>
               </fieldset>
             </div>
-            <footer className="admin-modal-footer"><button className="admin-secondary" type="button" onClick={() => setDraft(null)}>Cancel</button><button className="admin-primary" type="submit">Save {draft.status === "published" ? "product" : "draft"}</button></footer>
+            <footer className="admin-modal-footer"><button className="admin-secondary" type="button" onClick={() => setDraft(null)}>Cancel</button><button className="admin-primary" type="submit">Save preview</button></footer>
           </form>
         </section>
       </div>}
