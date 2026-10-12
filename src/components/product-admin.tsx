@@ -20,6 +20,8 @@ const emptyDraft = (): ProductDraft => ({
   status: "draft",
   featured: false,
   sortOrder: 100,
+  applications: [],
+  resources: [],
 });
 
 export function ProductAdmin() {
@@ -137,6 +139,36 @@ export function ProductAdmin() {
     updateDraft("specifications", draft.specifications.filter((_, specIndex) => specIndex !== index));
   }
 
+  function addApplication() {
+    if (!draft) return;
+    updateDraft("applications", [...draft.applications, ""]);
+  }
+
+  function updateApplication(index: number, value: string) {
+    if (!draft) return;
+    updateDraft("applications", draft.applications.map((application, applicationIndex) => applicationIndex === index ? value : application));
+  }
+
+  function removeApplication(index: number) {
+    if (!draft) return;
+    updateDraft("applications", draft.applications.filter((_, applicationIndex) => applicationIndex !== index));
+  }
+
+  function addResource() {
+    if (!draft) return;
+    updateDraft("resources", [...draft.resources, { title: "", url: "" }]);
+  }
+
+  function updateResource(index: number, key: "title" | "url" | "fileType" | "description", value: string) {
+    if (!draft) return;
+    updateDraft("resources", draft.resources.map((resource, resourceIndex) => resourceIndex === index ? { ...resource, [key]: value } : resource));
+  }
+
+  function removeResource(index: number) {
+    if (!draft) return;
+    updateDraft("resources", draft.resources.filter((_, resourceIndex) => resourceIndex !== index));
+  }
+
   if (!loaded) return <div className="admin-loading" aria-live="polite">Loading local catalog…</div>;
 
   return (
@@ -150,7 +182,7 @@ export function ProductAdmin() {
           <div><p className="admin-eyebrow">CATALOG MANAGEMENT · GAS-GRILL TEMPLATE</p><h1>Products</h1><p>Preview catalog edits in this browser.</p></div>
           <button className="admin-primary" onClick={startCreate}>＋ <span>New product</span></button>
         </div>
-        <div className="admin-callout"><span className="admin-callout-mark">i</span><p>This browser-only demo has no sign-in or server persistence. Draft/published status here is only a local preview: it does not publish products to the shared storefront or sitemap. Visitor pages and public URLs use the repository catalog. Changes do not sync across devices and clearing browser data resets them.</p></div>
+        <div className="admin-callout"><span className="admin-callout-mark">i</span><p>This browser-only demo has no sign-in or server persistence. Sample catalog content is illustrative; confirm product facts and trade terms with the merchant before publishing. Draft/published status here is only a local preview: it does not publish products to the shared storefront or sitemap. Visitor pages and public URLs use the repository catalog. Changes do not sync across devices and clearing browser data resets them.</p></div>
         {notice && <p className="admin-notice" role="status">{notice}</p>}
         <section className="admin-table-wrap" aria-label="Product catalog">
           <div className="admin-table-head"><span>PRODUCT <small>{items.length} TOTAL</small></span><span>COLLECTION</span><span>PRICE</span><span>STATUS</span><span>ACTIONS</span></div>
@@ -186,6 +218,23 @@ export function ProductAdmin() {
               </fieldset>
               <fieldset className="admin-fieldset"><legend>Specifications</legend><p className="admin-field-hint">Add product facts such as burners, cooking area, fuel and finish.</p>
                 {draft.specifications.map((specification, index) => <div className="admin-spec-row" key={`spec-${index}`}><input aria-label={`Specification ${index + 1} name`} value={specification.name} onChange={(event) => updateSpecification(index, "name", event.target.value)} placeholder="Name" /><input aria-label={`Specification ${index + 1} value`} value={specification.value} onChange={(event) => updateSpecification(index, "value", event.target.value)} placeholder="Value" /><button type="button" aria-label={`Remove specification ${index + 1}`} onClick={() => removeSpecification(index)}>×</button></div>)}<button className="admin-add-row" type="button" onClick={addSpecification}>＋ Add specification</button>
+              </fieldset>
+              <fieldset className="admin-fieldset"><legend>Trade information</legend><p className="admin-field-hint">Optional. Enter only details confirmed by the merchant. This browser-only demo does not verify trade terms.</p>
+                <div className="admin-repeater"><label className="admin-field">Minimum order quantity <span className="admin-optional">OPTIONAL</span><input value={draft.minimumOrderQuantity ?? ""} onChange={(event) => updateDraft("minimumOrderQuantity", event.target.value || undefined)} placeholder="e.g. confirm with merchant" /></label>{errors.minimumOrderQuantity && <small className="admin-error">{errors.minimumOrderQuantity}</small>}</div>
+                <div className="admin-repeater"><label className="admin-field">Lead time <span className="admin-optional">OPTIONAL</span><input value={draft.leadTime ?? ""} onChange={(event) => updateDraft("leadTime", event.target.value || undefined)} placeholder="e.g. confirm with merchant" /></label>{errors.leadTime && <small className="admin-error">{errors.leadTime}</small>}</div>
+                <div className="admin-repeater"><div className="admin-repeater-title"><span>APPLICATIONS / USE CASES</span><button type="button" onClick={addApplication}>＋ Add application</button></div>
+                  {draft.applications.map((application, index) => <div className="admin-inline-row" key={`application-${index}`}><label className="sr-only" htmlFor={`application-${index}`}>Application {index + 1}</label><input id={`application-${index}`} value={application} onChange={(event) => updateApplication(index, event.target.value)} placeholder="Describe a confirmed use case" /><button type="button" aria-label={`Remove application ${index + 1}`} onClick={() => removeApplication(index)}>×</button></div>)}
+                  {errors.applications && <small className="admin-error">{errors.applications}</small>}
+                </div>
+                <div className="admin-repeater"><div className="admin-repeater-title"><span>DOWNLOAD RESOURCES</span><button type="button" onClick={addResource}>＋ Add resource</button></div><p className="admin-field-hint">Links open in a new tab. Use a public http(s) address or a path within this storefront.</p>
+                  {draft.resources.map((resource, index) => <div className="admin-resource-row" key={`resource-${index}`}>
+                    <label className="admin-field">Resource title<input value={resource.title} onChange={(event) => updateResource(index, "title", event.target.value)} placeholder="Product specification sheet" /></label>
+                    <label className="admin-field">Resource URL<input type="url" value={resource.url} onChange={(event) => updateResource(index, "url", event.target.value)} placeholder="https://example.com/spec-sheet.pdf" /></label>
+                    <div className="admin-two-col"><label className="admin-field">File type <span className="admin-optional">OPTIONAL</span><input value={resource.fileType ?? ""} onChange={(event) => updateResource(index, "fileType", event.target.value)} placeholder="PDF" /></label><label className="admin-field">Description <span className="admin-optional">OPTIONAL</span><input value={resource.description ?? ""} onChange={(event) => updateResource(index, "description", event.target.value)} placeholder="What buyers can expect" /></label></div>
+                    <button className="admin-add-row" type="button" onClick={() => removeResource(index)}>Remove resource</button>
+                  </div>)}
+                  {errors.resources && <small className="admin-error">{errors.resources}</small>}
+                </div>
               </fieldset>
               <fieldset className="admin-fieldset"><legend>Pricing & preview status</legend>
                 <div className="admin-two-col"><label className="admin-field">Price<input type="number" min="0.01" step="0.01" value={draft.price || ""} onChange={(event) => updateDraft("price", Number(event.target.value))} placeholder="2499" />{errors.price && <small className="admin-error">{errors.price}</small>}</label><label className="admin-field">Currency<select value={draft.currency} onChange={(event) => updateDraft("currency", event.target.value)}><option value="USD">USD — US Dollar</option><option value="CAD">CAD — Canadian Dollar</option><option value="EUR">EUR — Euro</option><option value="GBP">GBP — Pound Sterling</option></select></label></div>

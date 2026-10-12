@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/catalog/mock-data";
+import { isSafeProductResourceUrl } from "@/lib/catalog/product-admin";
 import { getIndexableProducts } from "@/lib/catalog/seo";
 
 export function StorefrontProductDetail({ slug }: { slug: string }) {
@@ -28,8 +29,23 @@ export function StorefrontProductDetail({ slug }: { slug: string }) {
             <h2 id="detail-specs-heading">At a glance</h2>
             <dl className="detail-specs">{product.specifications.map((specification) => <div key={specification.name}><dt>{specification.name}</dt><dd>{specification.value}</dd></div>)}</dl>
           </section>}
+          {((product.applications?.length ?? 0) > 0 || product.minimumOrderQuantity?.trim() || product.leadTime?.trim()) && <section className="detail-trade-section" aria-labelledby="detail-trade-heading">
+            <h2 id="detail-trade-heading">Trade information</h2>
+            {product.applications?.some((application) => application.trim()) && <div className="detail-applications"><h3>Applications</h3><ul>{product.applications.filter((application) => application.trim()).map((application) => <li key={application}>{application}</li>)}</ul></div>}
+            <dl className="detail-trade-facts">
+              {product.minimumOrderQuantity?.trim() && <div><dt>Minimum order quantity</dt><dd>{product.minimumOrderQuantity}</dd></div>}
+              {product.leadTime?.trim() && <div><dt>Lead time</dt><dd>{product.leadTime}</dd></div>}
+            </dl>
+          </section>}
+          {product.resources?.some((resource) => resource.title.trim() && isSafeProductResourceUrl(resource.url)) && <section className="detail-resources-section" aria-labelledby="detail-resources-heading">
+            <h2 id="detail-resources-heading">Product resources</h2>
+            <ul className="detail-resources">{product.resources.filter((resource) => resource.title.trim() && isSafeProductResourceUrl(resource.url)).map((resource) => <li key={`${resource.title}-${resource.url}`}>
+              <a href={resource.url} target="_blank" rel="noopener noreferrer">{resource.title}<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
+              {(resource.fileType || resource.description) && <p>{[resource.fileType, resource.description].filter(Boolean).join(" · ")}</p>}
+            </li>)}</ul>
+          </section>}
           <a className="button button-dark detail-cta" href={`mailto:hello@emberandfield.example?subject=${encodeURIComponent(`Enquiry about ${product.name}`)}`}>Ask about this grill <span aria-hidden="true">↗</span></a>
-          <p className="detail-note">Sample product information. No checkout or payment is connected.</p>
+          <p className="detail-note">Sample product information. Confirm specifications, applications and trade terms with the merchant. No checkout or payment is connected.</p>
         </div>
       </div>
     </div>

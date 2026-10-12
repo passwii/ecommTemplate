@@ -1,4 +1,6 @@
-import { collections, products, type Product, type ProductImage, type ProductSpecification } from "@/lib/catalog/mock-data";
+import { collections, products, type Product, type ProductImage, type ProductResource, type ProductSpecification } from "@/lib/catalog/mock-data";
+import { isSafeProductResourceUrl } from "./product-resource-url.mjs";
+export { isSafeProductResourceUrl } from "./product-resource-url.mjs";
 
 export type ProductDraft = {
   id: string;
@@ -16,9 +18,13 @@ export type ProductDraft = {
   featured: boolean;
   sortOrder: number;
   sku?: string;
+  applications: string[];
+  minimumOrderQuantity?: string;
+  leadTime?: string;
+  resources: ProductResource[];
 };
 
-export type ProductValidationErrors = Partial<Record<"slug" | "name" | "category" | "shortDescription" | "description" | "price" | "images", string>>;
+export type ProductValidationErrors = Partial<Record<"slug" | "name" | "category" | "shortDescription" | "description" | "price" | "images" | "applications" | "minimumOrderQuantity" | "leadTime" | "resources", string>>;
 
 export function productToDraft(product: Product): ProductDraft {
   return {
@@ -37,6 +43,10 @@ export function productToDraft(product: Product): ProductDraft {
     featured: product.featured,
     sortOrder: product.sortOrder,
     sku: product.sku,
+    applications: [...(product.applications ?? [])],
+    minimumOrderQuantity: product.minimumOrderQuantity,
+    leadTime: product.leadTime,
+    resources: (product.resources ?? []).map((resource) => ({ ...resource })),
   };
 }
 
@@ -49,6 +59,11 @@ export function validateProductDraft(draft: ProductDraft): ProductValidationErro
   if (!draft.description.trim()) errors.description = "Enter a product description.";
   if (!Number.isFinite(draft.price) || draft.price <= 0) errors.price = "Enter a price greater than zero.";
   if (!draft.images.length || draft.images.some((image) => !image.url.trim() || !image.alt.trim())) errors.images = "Add at least one image with a URL and alt text.";
+  if (draft.applications.some((application) => !application.trim())) errors.applications = "Complete or remove each application entry.";
+  if (draft.minimumOrderQuantity !== undefined && draft.minimumOrderQuantity.trim() === "") errors.minimumOrderQuantity = "Complete this field or clear it to leave it optional.";
+  if (draft.leadTime !== undefined && draft.leadTime.trim() === "") errors.leadTime = "Complete this field or clear it to leave it optional.";
+  if (draft.resources.some((resource) => !resource.title.trim() || !resource.url.trim())) errors.resources = "Each resource needs a title and URL, or remove the incomplete row.";
+  else if (draft.resources.some((resource) => !isSafeProductResourceUrl(resource.url))) errors.resources = "Use an http(s) URL or a path within this storefront.";
   return errors;
 }
 
@@ -80,6 +95,15 @@ export function draftToProduct(draft: ProductDraft, existing?: Product): Product
     featured: draft.featured,
     sortOrder: draft.sortOrder,
     sku: draft.sku?.trim() || undefined,
+    applications: draft.applications.map((application) => application.trim()).filter(Boolean),
+    minimumOrderQuantity: draft.minimumOrderQuantity?.trim() || undefined,
+    leadTime: draft.leadTime?.trim() || undefined,
+    resources: draft.resources.filter((resource) => resource.title.trim() && resource.url.trim()).map((resource) => ({
+      title: resource.title.trim(),
+      url: resource.url.trim(),
+      fileType: resource.fileType?.trim() || undefined,
+      description: resource.description?.trim() || undefined,
+    })),
     badge: existing?.badge,
     fuel: compatibilitySpecification("Fuel") ?? existing?.fuel,
     burners: Number(compatibilitySpecification("Burners")) || existing?.burners,
