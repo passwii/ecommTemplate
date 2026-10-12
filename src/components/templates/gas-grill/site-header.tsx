@@ -12,7 +12,7 @@ export function SiteHeader() {
         <Link href="/collections/compact">Compact</Link>
         <Link href="/company">Company</Link>
       </nav>
-      <Link className="header-cta" href="/#collection">Explore grills <span aria-hidden="true">↗</span></Link>
+      <Link className="header-cta" href="/inquiries">Request a quote <span aria-hidden="true">↗</span></Link>
       <span className="sr-only">Active storefront template: {template}</span>
     </header>
   );

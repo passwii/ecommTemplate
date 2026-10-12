@@ -1,42 +1,57 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPublishedCollections, getCollection, getPublishedProducts } from "@/lib/catalog/mock-data";
-import { createPageMetadata } from "@/lib/seo/metadata";
 import { StorefrontCollectionCatalog } from "@/components/storefront-product-grid";
+import { CatalogUnavailable } from "@/components/catalog-unavailable";
+import { fetchCollection, fetchProducts } from "@/lib/catalog/api";
+import { createPageMetadata } from "@/lib/seo/metadata";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export const dynamicParams = false;
-
-export function generateStaticParams() { return getPublishedCollections().map(({ slug }) => ({ slug })); }
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const collection = getCollection(slug);
-  if (!collection || !getPublishedCollections().some(({ slug: publishedSlug }) => publishedSlug === slug)) return {};
+  const collection = await fetchCollection(slug);
+  if (!collection.ok) return {};
 
-  const representativeProduct = getPublishedProducts().find((product) => product.collectionSlug === slug);
+  const products = await fetchProducts({ collection: slug, limit: 100 });
+  const representativeProduct = products.ok ? products.data[0] : undefined;
+
   return createPageMetadata({
-    title: collection.name,
-    description: collection.description,
+    title: collection.data.name,
+    description: collection.data.description,
     pathname: `/collections/${slug}`,
     image: {
-      url: representativeProduct?.image ?? "/images/grill-hero.jpg",
-      alt: representativeProduct?.imageAlt ?? "Outdoor patio with lounge seating beneath string lights",
+      url: representativeProduct?.image || "/images/grill-hero.jpg",
+      alt: representativeProduct?.imageAlt || "Outdoor patio with lounge seating beneath string lights",
     },
   });
 }
 
 export default async function CollectionPage({ params }: Props) {
   const { slug } = await params;
-  const collection = getCollection(slug);
-  if (!collection || !getPublishedCollections().some(({ slug: publishedSlug }) => publishedSlug === slug)) notFound();
+  const [collection, products] = await Promise.all([
+    fetchCollection(slug),
+    fetchProducts({ collection: slug, limit: 100 }),
+  ]);
+
+  if (!collection.ok && collection.reason === "not_found") notFound();
+
+  if (!collection.ok) {
+    return (
+      <div className="catalog-page page-wrap">
+        <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>Collection</span></div>
+        <CatalogUnavailable heading="This collection is temporarily unavailable." />
+      </div>
+    );
+  }
+
   return (
     <div className="catalog-page page-wrap">
-      <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>{collection.name}</span></div>
-      <header className="catalog-heading"><p className="eyebrow">The Ember / Field collection</p><h1>{collection.name} for<br /><em>open-air living.</em></h1><p>{collection.description}</p></header>
-      <StorefrontCollectionCatalog slug={slug} />
+      <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>{collection.data.name}</span></div>
+      <header className="catalog-heading"><p className="eyebrow">The Ember / Field collection</p><h1>{collection.data.name} for<br /><em>open-air living.</em></h1><p>{collection.data.description}</p></header>
+      {products.ok
+        ? <StorefrontCollectionCatalog products={products.data} />
+        : <CatalogUnavailable heading="Products in this collection are temporarily unavailable." />}
     </div>
   );
 }
