@@ -146,6 +146,23 @@ func (r *PostgresRepository) GetPublishedProduct(ctx context.Context, slug strin
 	return product, nil
 }
 
+func (r *PostgresRepository) GetPublishedProductByID(ctx context.Context, id string) (Product, error) {
+	row := r.db.QueryRowContext(ctx, `
+		SELECT `+productColumns+`
+		FROM products p
+		JOIN collections c ON c.id = p.collection_id
+		WHERE p.status = 'published' AND p.id = $1`, id)
+
+	product, err := scanProduct(row)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Product{}, ErrNotFound
+	}
+	if err != nil {
+		return Product{}, err
+	}
+	return product, nil
+}
+
 func scanProduct(row rowScanner) (Product, error) {
 	var (
 		product               Product

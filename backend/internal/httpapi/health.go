@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/passwii/ecommTemple/backend/internal/catalog"
+	"github.com/passwii/ecommTemple/backend/internal/inquiry"
 )
 
 const readinessTimeout = 2 * time.Second
@@ -18,8 +19,10 @@ type healthResponse struct {
 
 // Deps holds the runtime dependencies used to build the HTTP handler.
 type Deps struct {
-	DB      *sql.DB
-	Catalog catalog.Repository
+	DB        *sql.DB
+	Catalog   catalog.Repository
+	Inquiries *inquiry.Service
+	Limiter   *inquiry.RateLimiter
 }
 
 // NewHandler registers public health and catalog endpoints.
@@ -44,6 +47,9 @@ func NewHandler(deps Deps) http.Handler {
 	})
 	if deps.Catalog != nil {
 		registerCatalogRoutes(mux, deps.Catalog)
+	}
+	if deps.Inquiries != nil {
+		registerInquiryRoutes(mux, deps.Inquiries, deps.Limiter)
 	}
 	return mux
 }

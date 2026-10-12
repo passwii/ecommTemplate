@@ -69,6 +69,47 @@ Public read-only catalog (published records only; drafts and unknown slugs retur
 
 Responses use a `{"data": ...}` envelope. Errors use `{"error": {"code", "message", "fields?"}}` with codes `not_found`, `invalid_query`, and `internal_error`. Health and error responses never return the database URL or internal error detail.
 
+## Public inquiry intake
+
+`POST /api/v1/inquiries` accepts visitor submissions and stores them in the store database.
+
+Request body (`application/json`, max 64 KB, unknown fields rejected):
+
+```json
+{
+  "contact": {"name": "Alex Morgan", "email": "buyer@example.com", "company": "Example Importers", "phone": "+1 555 0100"},
+  "destinationCountry": "US",
+  "productId": "grill-01",
+  "quantity": 120,
+  "customizationRequest": "Private-label packaging options",
+  "privacyConsent": {"accepted": true, "noticeVersion": "inquiry-privacy-v1"},
+  "sourcePath": "/products/ridge-4-burner",
+  "requestId": "optional-idempotency-key"
+}
+```
+
+Behavior:
+
+- `contact.name`, `contact.email`, and accepted privacy consent are required. Company, phone, country, product, quantity and message are optional.
+- `destinationCountry` must be a two-letter code when present and is normalized to uppercase.
+- `sourcePath` must be a path within this storefront.
+- `productId` must reference a published product; the server stores its own product snapshot (slug/model/name) so later product edits do not rewrite history. An unknown or unpublished product returns `404`.
+- Operational fields (status, owner, activities) are never accepted from visitors; unknown fields are rejected with `400`.
+- `website` is a honeypot field; filling it rejects the submission.
+- `requestId` makes retries idempotent: a replay returns the existing inquiry with `200` instead of creating a duplicate.
+- Submissions are rate limited per client address (`INQUIRY_RATE_LIMIT` per `INQUIRY_RATE_WINDOW`, default 5 per 10m) and return `429` when exceeded. The limiter is in-memory per instance.
+- Errors use codes `validation_error`, `not_found`, `rate_limited`, `unsupported_media_type`, and `internal_error`. Failures never return a fake success and never expose SQL or stack detail.
+
+Success responses:
+
+- `201` on create, `200` on idempotent replay:
+
+```json
+{"data": {"id": "inq_...", "status": "received", "receivedAt": "2026-10-12T06:01:20Z", "privacyNotice": "inquiry-privacy-v1"}}
+```
+
+New inquiries start in the `new` status with a `created` activity recorded by `system`. Inquiry management (authentication, list/detail, status changes, notes) is a later phase and is not implemented yet.
+
 ## Validate
 
 ```sh
@@ -78,6 +119,6 @@ go test ./...
 go vet ./...
 ```
 
-Catalog integration tests run against `ecommtemple_dev` inside a rolled-back transaction and are skipped when `DATABASE_URL` is unset.
+Catalog and inquiry integration tests create an isolated schema in `ecommtemple_dev`, so they neither depend on nor disturb existing data, and are skipped when `DATABASE_URL` is unset.
 
-Inquiry intake, admin authentication and management endpoints are future phases and are not available yet.
+Admin authentication and inquiry management endpoints are future phases and are not available yet.

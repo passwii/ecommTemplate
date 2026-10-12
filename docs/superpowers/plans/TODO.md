@@ -53,10 +53,27 @@
 - API 冒烟：collections/products/company-content 返回 seed 数据；未知 slug → 404；`limit=500` → 400。
 - `go run ./cmd/storefront-seed` 连续执行两次无重复数据。
 
+### 完成
+
+- [x] 询盘 schema migration（`00003`）：`inquiries`、`inquiry_activities`，含状态约束与活动类型约束。
+- [x] `inquiry` 包：字段校验、限流器、服务层（幂等 + 产品快照）、PostgreSQL 仓储（询盘与 `created` 活动同一事务）。
+- [x] 公开接口 `POST /api/v1/inquiries`：严格 JSON 解码、64KB 体积限制、Content-Type 校验、honeypot、按客户端限流、可选 `requestId` 幂等、错误映射不泄漏内部细节。
+- [x] 运营状态仅由服务端设置；访客伪造运营字段被拒绝。
+- [x] 配置新增 `INQUIRY_RATE_LIMIT` / `INQUIRY_RATE_WINDOW`（默认 5 次 / 10 分钟）。
+- [x] README（root/backend）与 API 契约记录询盘端点、校验规则与能力边界。
+
+### 验证记录（询盘阶段实测）
+
+- backend：`gofmt -l`（无输出）、`go build ./...`、`go test ./...`、`go vet ./...` 全部通过。
+- 询盘集成测试在独立 schema 内运行，覆盖持久化、`created` 活动、约束失败回滚、幂等查询、未知 ID。
+- API 冒烟：有效提交 201 且落库（含产品快照 `ridge-4-burner`、状态 `new`、国家 US、数量 120、`created` 活动）；幂等重放 200 且不重复建单；未知产品 404；伪造 `status` 400；honeypot 400；缺少同意 400（带字段）；非 JSON 415；超过限流 429。
+- 冒烟产生的测试询盘行已清理，`inquiries` 计数为 0。
+
 ### 进行中
 
-- [ ] Next.js 页面接入 Catalog API（下一阶段，前端仍读静态 mock）。
-- [ ] 询盘公开 API 与持久化。
+- [ ] Next.js 页面接入 Catalog API（前端仍读静态 mock）。
+- [ ] 询盘表单（CTA、产品预填、提交反馈）。
+- [ ] 询盘管理后台（认证、列表/详情、状态与跟进）。
 
 ### 验证记录（本阶段实测）
 

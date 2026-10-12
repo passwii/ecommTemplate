@@ -59,3 +59,46 @@ func TestLoadAcceptsValidConfiguration(t *testing.T) {
 		t.Error("DatabaseURL is empty")
 	}
 }
+
+func TestLoadUsesInquiryRateLimitDefaults(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/ecommtemple_dev?sslmode=disable")
+	t.Setenv("INQUIRY_RATE_LIMIT", "")
+	t.Setenv("INQUIRY_RATE_WINDOW", "")
+
+	got, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if got.InquiryRateLimit != 5 {
+		t.Errorf("InquiryRateLimit = %d, want 5", got.InquiryRateLimit)
+	}
+	if got.InquiryRateWindow.Minutes() != 10 {
+		t.Errorf("InquiryRateWindow = %v, want 10m", got.InquiryRateWindow)
+	}
+}
+
+func TestLoadRejectsInvalidInquiryRateLimit(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://user:password@localhost:5432/ecommtemple_dev?sslmode=disable")
+
+	t.Run("non-numeric limit", func(t *testing.T) {
+		t.Setenv("INQUIRY_RATE_LIMIT", "many")
+		if _, err := Load(); err == nil {
+			t.Fatal("Load() error = nil, want invalid limit error")
+		}
+	})
+
+	t.Run("negative limit", func(t *testing.T) {
+		t.Setenv("INQUIRY_RATE_LIMIT", "-1")
+		if _, err := Load(); err == nil {
+			t.Fatal("Load() error = nil, want invalid limit error")
+		}
+	})
+
+	t.Run("invalid window", func(t *testing.T) {
+		t.Setenv("INQUIRY_RATE_LIMIT", "5")
+		t.Setenv("INQUIRY_RATE_WINDOW", "soon")
+		if _, err := Load(); err == nil {
+			t.Fatal("Load() error = nil, want invalid window error")
+		}
+	})
+}

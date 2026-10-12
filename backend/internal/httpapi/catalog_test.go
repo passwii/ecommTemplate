@@ -59,6 +59,18 @@ func (f *fakeRepository) GetPublishedProduct(_ context.Context, slug string) (ca
 	return catalog.Product{}, catalog.ErrNotFound
 }
 
+func (f *fakeRepository) GetPublishedProductByID(_ context.Context, id string) (catalog.Product, error) {
+	if f.err != nil {
+		return catalog.Product{}, f.err
+	}
+	for _, product := range f.products {
+		if product.ID == id {
+			return product, nil
+		}
+	}
+	return catalog.Product{}, catalog.ErrNotFound
+}
+
 func (f *fakeRepository) GetCompanyContent(context.Context) (catalog.CompanyContent, error) {
 	if f.err != nil {
 		return catalog.CompanyContent{}, f.err

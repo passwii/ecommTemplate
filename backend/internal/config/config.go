@@ -5,15 +5,23 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
-const defaultHTTPAddr = ":8080"
+const (
+	defaultHTTPAddr         = ":8080"
+	defaultInquiryRateLimit = 5
+	defaultInquiryWindow    = 10 * time.Minute
+)
 
 // Config contains runtime settings for the storefront API.
 type Config struct {
-	HTTPAddr    string
-	DatabaseURL string
+	HTTPAddr          string
+	DatabaseURL       string
+	InquiryRateLimit  int
+	InquiryRateWindow time.Duration
 }
 
 // Load reads and validates runtime settings from the process environment.
@@ -36,5 +44,28 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("HTTP_ADDR is invalid")
 	}
 
-	return Config{HTTPAddr: httpAddr, DatabaseURL: databaseURL}, nil
+	rateLimit := defaultInquiryRateLimit
+	if raw := strings.TrimSpace(os.Getenv("INQUIRY_RATE_LIMIT")); raw != "" {
+		parsed, err := strconv.Atoi(raw)
+		if err != nil || parsed < 1 {
+			return Config{}, errors.New("INQUIRY_RATE_LIMIT must be a positive whole number")
+		}
+		rateLimit = parsed
+	}
+
+	rateWindow := defaultInquiryWindow
+	if raw := strings.TrimSpace(os.Getenv("INQUIRY_RATE_WINDOW")); raw != "" {
+		parsed, err := time.ParseDuration(raw)
+		if err != nil || parsed <= 0 {
+			return Config{}, errors.New("INQUIRY_RATE_WINDOW must be a positive duration such as 10m")
+		}
+		rateWindow = parsed
+	}
+
+	return Config{
+		HTTPAddr:          httpAddr,
+		DatabaseURL:       databaseURL,
+		InquiryRateLimit:  rateLimit,
+		InquiryRateWindow: rateWindow,
+	}, nil
 }

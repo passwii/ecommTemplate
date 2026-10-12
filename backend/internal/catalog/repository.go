@@ -30,5 +30,6 @@ type Repository interface {
 	GetPublishedCollection(ctx context.Context, slug string) (Collection, error)
 	ListPublishedProducts(ctx context.Context, filter Filter) ([]Product, error)
 	GetPublishedProduct(ctx context.Context, slug string) (Product, error)
+	GetPublishedProductByID(ctx context.Context, id string) (Product, error)
 	GetCompanyContent(ctx context.Context) (CompanyContent, error)
 }

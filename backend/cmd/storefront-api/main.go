@@ -14,6 +14,7 @@ import (
 	"github.com/passwii/ecommTemple/backend/internal/config"
 	"github.com/passwii/ecommTemple/backend/internal/database"
 	"github.com/passwii/ecommTemple/backend/internal/httpapi"
+	"github.com/passwii/ecommTemple/backend/internal/inquiry"
 )
 
 func main() {
@@ -34,9 +35,18 @@ func main() {
 	}
 	defer db.Close()
 
+	catalogRepo := catalog.NewPostgresRepository(db)
+	inquiryRepo := inquiry.NewPostgresRepository(db)
+	inquiryService := inquiry.NewService(inquiryRepo, catalogRepo)
+
 	server := &http.Server{
-		Addr:              cfg.HTTPAddr,
-		Handler:           httpapi.NewHandler(httpapi.Deps{DB: db, Catalog: catalog.NewPostgresRepository(db)}),
+		Addr: cfg.HTTPAddr,
+		Handler: httpapi.NewHandler(httpapi.Deps{
+			DB:        db,
+			Catalog:   catalogRepo,
+			Inquiries: inquiryService,
+			Limiter:   inquiry.NewRateLimiter(cfg.InquiryRateLimit, cfg.InquiryRateWindow),
+		}),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      15 * time.Second,
