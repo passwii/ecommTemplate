@@ -194,13 +194,13 @@ Intensity target: **4 / 10**. Enough to feel considered, never enough to compete
 | Section reveal on scroll | Opacity `0 → 1`, translate `16px → 0` | `520ms` | `cubic-bezier(0.16, 1, 0.3, 1)` |
 | Card hover | Image `scale(1.03)`, card `translateY(-2px)` | `450ms` | `cubic-bezier(0.2, 0.7, 0.2, 1)` |
 | Button press | `scale(0.98)` | `120ms` | `ease-out` |
-| Header on scroll | Border and background settle once | `200ms` | `ease-out` |
 
 Rules:
 
 - Animate `transform` and `opacity` only.
 - No `window.addEventListener("scroll")`. Reveals use IntersectionObserver or CSS scroll-driven animation.
 - Reveals fire once per element. Repeated re-animation on scroll-back is not wanted.
+- The sticky header keeps one settled border and background at every scroll position. It has no un-settled state to animate between, so there is no header scroll transition.
 - Under `prefers-reduced-motion: reduce`, all of the above resolve instantly to their end state, and `scroll-behavior` returns to `auto`.
 - No parallax, no scroll hijacking, no looping ambient animation.
 
