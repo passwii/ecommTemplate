@@ -9,7 +9,8 @@ export function StorefrontProductGrid({ collectionSlug, featured = false, limit 
   if (featured) visible = visible.filter((product) => product.featured);
   if (limit) visible = visible.slice(0, limit);
 
-  return <div className="product-grid">{visible.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div>;
+  const mode = featured ? " product-grid is-featured" : " product-grid";
+  return <div className={mode.trim()}>{visible.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div>;
 }
 
 export function StorefrontCollectionCatalog({ slug }: { slug: string }) {
@@ -19,8 +20,17 @@ export function StorefrontCollectionCatalog({ slug }: { slug: string }) {
 
   return (
     <>
-      <div className="catalog-toolbar"><span>{items.length} considered designs</span><span>Natural gas and propane</span></div>
-      {items.length ? <div className="product-grid">{items.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div> : <div className="empty-state"><h2>No published designs in this collection.</h2><Link className="text-link" href="/">Explore all grills</Link></div>}
+      <div className="catalog-toolbar">
+        <span>{items.length} {items.length === 1 ? "design" : "designs"}</span>
+        <span>Natural gas and propane</span>
+      </div>
+      {items.length
+        ? <div className="product-grid">{items.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div>
+        : <div className="empty-state">
+            <h2>No published designs in this collection.</h2>
+            <p>This collection is empty right now. The full range is still available to browse.</p>
+            <Link className="text-link" href="/#collection">Explore grills</Link>
+          </div>}
     </>
   );
 }

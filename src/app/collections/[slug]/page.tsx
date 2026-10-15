@@ -34,9 +34,14 @@ export default async function CollectionPage({ params }: Props) {
   if (!collection || !getPublishedCollections().some(({ slug: publishedSlug }) => publishedSlug === slug)) notFound();
   return (
     <div className="catalog-page page-wrap">
-      <div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>{collection.name}</span></div>
-      <header className="catalog-heading"><p className="eyebrow">The Ember / Field collection</p><h1>{collection.name} for<br /><em>open-air living.</em></h1><p>{collection.description}</p></header>
-      <StorefrontCollectionCatalog slug={slug} />
+      <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><span>{collection.name}</span></nav>
+      <header className="catalog-heading" data-reveal>
+        <h1>{collection.name} for<br /><em>open-air living.</em></h1>
+        <p>{collection.description}</p>
+      </header>
+      <div data-reveal style={{ "--reveal-delay": "80ms" } as React.CSSProperties}>
+        <StorefrontCollectionCatalog slug={slug} />
+      </div>
     </div>
   );
 }
