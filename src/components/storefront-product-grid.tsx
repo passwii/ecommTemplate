@@ -25,7 +25,7 @@ export function StorefrontCollectionCatalog({ slug }: { slug: string }) {
         <span>Natural gas and propane</span>
       </div>
       {items.length
-        ? <div className="product-grid">{items.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div>
+        ? <div className="product-grid">{items.map((product, index) => <ProductCard key={product.id} product={product} index={index} priority={index === 0} />)}</div>
         : <div className="empty-state">
             <h2>No published designs in this collection.</h2>
             <p>This collection is empty right now. The full range is still available to browse.</p>

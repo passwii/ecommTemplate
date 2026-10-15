@@ -31,7 +31,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     // `suppressHydrationWarning` covers the `js` class that Reveal adds to <html>
     // before first paint. Server HTML has no way to know scripting is available.
-    <html lang="en" className={`${archivo.variable} ${instrumentSans.variable}`} suppressHydrationWarning>
+    // `data-scroll-behavior="smooth"` tells Next.js the smooth scrolling declared in
+    // globals.css is intentional, so it keeps suppressing smooth scroll on route changes.
+    <html lang="en" className={`${archivo.variable} ${instrumentSans.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
         <SiteHeader />
         <main>{children}</main>
