@@ -9,6 +9,13 @@ Before implementing or delivering a new product, collection/category, or storefr
 
 Do not silently introduce a second visual style inside an existing template. Template selection is a delivery/configuration decision, not a visitor-facing switch in the first release.
 
+## Mandatory design language
+Before changing visitor-facing UI, the storefront must have a design language document at `docs/design/<template-id>.md`, written per [`.agents/design-language-protocol.md`](./.agents/design-language-protocol.md). That document is the authority for the store's colours, type, layout, components, motion, responsive behaviour, and accessibility floor. The current document is [`docs/design/gas-grill.md`](./docs/design/gas-grill.md).
+
+- Research comparable stores before fixing a visual direction, and record observed evidence separately from inference.
+- Token values in the document and in the implementation must match; do not keep two sources of truth.
+- Each independently deployed store gets its own document. Do not reuse one store's palette as a project-wide default.
+
 ## Architecture boundaries
 
 - Next.js owns storefront rendering and presentation. Keep template-specific page composition under `src/components/templates/<template-id>/` and `src/app/`; reusable catalog types/data access belong under `src/lib/catalog/`.
@@ -21,11 +28,12 @@ Do not silently introduce a second visual style inside an existing template. Tem
 
 ## Change checklist
 
-1. Name the selected `template_id` before changing storefront UI.
+1. Name the selected `template_id` and the design language document being followed before changing storefront UI.
 2. Keep the selected template's design consistent across its pages.
-3. Prefer shared content contracts with template-owned composition.
-4. Verify desktop and mobile layouts, keyboard focus, empty/unknown routes, and build/type checks.
-5. Update this file and `AGENTS.md` if the delivery convention changes.
+3. Use only the tokens the design document defines; no one-off colours, radii, or type sizes.
+4. Prefer shared content contracts with template-owned composition.
+5. Verify desktop and mobile layouts, keyboard focus, empty/unknown routes, and build/type checks.
+6. Update this file and the design document if the delivery convention changes.
 
 ## Agent contribution and PR review
 
