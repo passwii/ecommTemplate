@@ -2,7 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { StorefrontProductGrid } from "@/components/storefront-product-grid";
 import { CategoryLinks } from "@/components/templates/gas-grill/category-links";
+import { CatalogUnavailable } from "@/components/catalog-unavailable";
+import { fetchCollections, fetchProducts } from "@/lib/catalog/api";
 import { createPageMetadata } from "@/lib/seo/metadata";
+
+export const revalidate = 60;
 
 export const metadata = createPageMetadata({
   title: "Outdoor cooking, considered",
@@ -11,7 +15,12 @@ export const metadata = createPageMetadata({
   image: { url: "/images/grill-hero.jpg", alt: "Outdoor patio lounge with a fire pit beneath string lights and trees" },
 });
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [featuredProducts, collections] = await Promise.all([
+    fetchProducts({ featured: true, limit: 3 }),
+    fetchCollections(),
+  ]);
+
   return (
     <>
       <section className="hero">
@@ -31,7 +40,7 @@ export default function HomePage() {
           <Link className="text-link" href="/collections/freestanding">Explore grills</Link>
         </div>
         <div data-reveal style={{ "--reveal-delay": "80ms" } as React.CSSProperties}>
-          <StorefrontProductGrid featured limit={3} />
+          {featuredProducts.ok ? <StorefrontProductGrid products={featuredProducts.data} /> : <CatalogUnavailable heading="Featured grills are temporarily unavailable." />}
         </div>
       </section>
 
@@ -40,7 +49,7 @@ export default function HomePage() {
           <h2>Find your kind<br />of cooking.</h2>
         </div>
         <div data-reveal style={{ "--reveal-delay": "80ms" } as React.CSSProperties}>
-          <CategoryLinks />
+          {collections.ok ? <CategoryLinks collections={collections.data} /> : <CatalogUnavailable heading="Collections are temporarily unavailable." />}
         </div>
       </section>
 

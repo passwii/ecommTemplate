@@ -42,7 +42,7 @@ export function SiteHeader() {
         {NAV_LINKS.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
       </nav>
       <div className="header-actions">
-        <Link className="header-cta" href="/#collection">Explore grills</Link>
+        <Link className="header-cta" href="/inquiries">Get in touch</Link>
         <button
           className="menu-toggle"
           type="button"

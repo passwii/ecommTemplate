@@ -6,15 +6,15 @@ Follows [`../../.agents/design-language-protocol.md`](../../.agents/design-langu
 
 - **Template:** `template_id: gas-grill` (the only registered template; see `src/lib/templates/registry.ts`).
 - **Store:** EMBER / FIELD, a single-brand outdoor cooking storefront.
-- **Routes in scope:** `/`, `/collections/[slug]`, `/products/[slug]`, `/company`.
+- **Routes in scope:** `/`, `/collections/[slug]`, `/products/[slug]`, `/company`, `/inquiries`.
 - **Nature of this work:** replaces the incumbent visual world. The previous forest-green and pale-grey palette, Manrope + DM Sans pairing, and square-cornered component styling are retired. Routes, copy, catalog data, and component boundaries are preserved.
-- **Out of scope:** `/admin/*` (a separate browser-local MVP surface that keeps its own `admin.css`), checkout, payment, and any B2B wholesale presentation.
+- **Out of scope:** `/admin/*`. Store administration is an operator surface, not a visitor-facing one, and it is not bound to this document's visitor tokens; it keeps its own `src/app/admin.css`. Checkout, payment, and any B2B wholesale presentation are also out of scope.
 
 ## 2. Audience and goal
 
 - **Primary visitor:** overseas consumers researching a gas grill for a home, patio, or balcony.
 - **Successful visit:** the visitor understands what the brand sells, compares grills by burners, cooking area, and fuel with confidence, opens a product, and starts an enquiry.
-- **Consequence for the design:** product photography and comparable specifications carry the page. This is a considered browse, not a high-urgency checkout funnel. There is no cart, so "ask about this grill" is the terminal action and must stay prominent and unambiguous.
+- **Consequence for the design:** product photography and comparable specifications carry the page. This is a considered browse, not a high-urgency checkout funnel. There is no cart, so the enquiry is the terminal action and must stay prominent and unambiguous.
 
 ## 3. Product context
 
@@ -73,10 +73,13 @@ Defined once in `src/app/globals.css` as custom properties. Values here and in t
 | `--line` | `#dcdfdd` | Dividers, borders, input strokes |
 | `--accent` | `#1d5c3f` | Primary actions, link hover, focus ring |
 | `--accent-strong` | `#164a32` | Accent hover and pressed state |
+| `--danger` | `#a63a2a` | Form field errors, error summaries, lost-status text |
+| `--danger-surface` | `#f7ece9` | Error callout and error-summary background |
 
 Rules:
 
-- One accent. No second hue is introduced anywhere in the storefront, including badges and status text.
+- One accent. No second accent or decorative hue is introduced anywhere in the storefront, including badges and status text. `--danger` is a functional signal reserved for errors and the "lost" inquiry status; it is never decorative.
+- `--danger` is never the only signal. Error text always carries a message, invalid fields pair it with `aria-invalid`, and status text is always written out next to its colour.
 - No pure `#000` and no pure `#fff` as text colours. `--surface` is the only near-white fill.
 - Dark-on-light text must clear WCAG AA (4.5:1 body, 3:1 large). Light-on-dark uses `#f4f6f5` on `--graphite` or darker.
 - The accent is never the sole carrier of meaning; pair it with text or an icon.
@@ -127,6 +130,7 @@ Scale:
 - At most one horizontal marquee-style element per page, and only where it carries real content. None is planned for the first release.
 - Eyebrow labels are rationed to at most one per three sections. The home page uses them on the hero and the approach band only.
 - Long specification lists use grouped cards, not a hairline-under-every-row table.
+- `/inquiries` follows: heading, two-column layout of form and "what happens next" aside. It collapses to one column below `768px`.
 
 ## 8. Components
 
@@ -167,9 +171,12 @@ Scale:
 
 ### Forms and inputs
 
-- Label above the input, helper text below, error text below that in an error colour that is not the accent.
+- Label above the input, helper text below, error text below that in `--danger`, which is not the accent.
 - Focus ring is `--accent` at `2px` with `2px` offset, always visible.
 - No placeholder used as a label.
+- The enquiry form at `/inquiries` is the reference implementation: single-column fields, paired short fields in a two-up row that collapses to one column below `768px`, a privacy-consent checkbox above the notice text, and one full-width submit.
+- Invalid fields set `aria-invalid` and an error message; a failed submit also renders an error summary with `role="alert"` listing every message. Success replaces the form with a status block carrying `role="status"`.
+- The honeypot field is positioned off-screen and hidden from assistive technology. It is never visible to a visitor.
 
 ### Navigation
 
@@ -236,7 +243,7 @@ Every multi-column layout declares its `< 768px` collapse explicitly.
 
 - Voice: plain, calm, specific. Short declarative sentences. No superlatives, no "elevate", no "unleash", no fabricated engineering claims.
 - Copy states what the product is and how it is used. It does not assert performance the data cannot support.
-- Sample-content disclaimers stay visible where the project already places them (product detail note, company storage note, footer).
+- Sample-content disclaimers stay visible where the project already places them: the product detail note, the company sample note, the enquiry aside note, and the footer. Do not describe the browser-local product and company editors as a secure or production-ready backend.
 - The brand name EMBER / FIELD, the price format, and the enquiry email are unchanged.
 
 ## 13. Review checklist

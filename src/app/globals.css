@@ -18,6 +18,8 @@
   --line: #dcdfdd;
   --accent: #1d5c3f;
   --accent-strong: #164a32;
+  --danger: #a63a2a;
+  --danger-surface: #f7ece9;
   --on-dark: #f4f6f5;
   --on-dark-muted: #c3c9c6;
 
@@ -1213,6 +1215,10 @@ p { margin: 0; }
   .site-footer { grid-template-columns: minmax(0, 1fr); }
   .site-footer > p { justify-self: start; text-align: left; }
   .closing-section h2 { max-width: none; }
+  .inquiry-layout { grid-template-columns: minmax(0, 1fr); gap: 2.5rem; }
+  .inquiry-field-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .inquiry-form { padding: 1.5rem 1.25rem; }
+  .inquiry-success { padding: 1.75rem 1.25rem; }
 }
 
 @media (max-width: 419px) {
@@ -1221,3 +1227,197 @@ p { margin: 0; }
   .category-grid { grid-template-columns: minmax(0, 1fr); }
   .category-tile:nth-child(3) { grid-column: auto; }
 }
+/* --------------------------------------------------------------------------
+   18. Unavailable and placeholder surfaces
+   Shared blocks for data that the runtime catalog API could not serve.
+   -------------------------------------------------------------------------- */
+
+.catalog-unavailable {
+  max-width: 52ch;
+  padding-block: clamp(3rem, 6vw, 5rem);
+}
+
+.catalog-unavailable h2 { font-size: var(--text-h2); letter-spacing: -0.035em; }
+
+.catalog-unavailable > p:not(.eyebrow) {
+  margin: 1rem 0 1.5rem;
+  color: var(--slate);
+  line-height: 1.7;
+}
+
+.product-image-placeholder {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: linear-gradient(135deg, var(--paper), var(--line));
+}
+
+.company-sample-note {
+  max-width: 68ch;
+  margin-bottom: 2rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: var(--surface);
+  color: var(--slate);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+/* --------------------------------------------------------------------------
+   19. Enquiry page
+   The terminal action of the storefront. Uses the same tokens as every
+   other visitor-facing surface; see docs/design/gas-grill.md section 8.
+   -------------------------------------------------------------------------- */
+
+.inquiry-page { padding-block: 2rem var(--space-section); }
+
+.inquiry-page-heading {
+  max-width: 52ch;
+  padding: clamp(3rem, 6vw, 5rem) 0 clamp(2rem, 4vw, 3.5rem);
+}
+
+.inquiry-page-heading h1 { font-size: var(--text-display); }
+
+.inquiry-page-heading > p:last-child {
+  max-width: 52ch;
+  margin-top: 1.25rem;
+  color: var(--slate);
+  line-height: 1.7;
+}
+
+.inquiry-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+}
+
+.inquiry-form {
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.inquiry-product {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--slate);
+  font-size: 0.8125rem;
+}
+
+.inquiry-product strong { color: var(--ink); font-weight: 600; }
+
+.inquiry-field { margin-bottom: 1rem; }
+
+.inquiry-field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1.25rem;
+}
+
+.inquiry-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.inquiry-optional { color: var(--slate); font-weight: 500; }
+
+.inquiry-field input,
+.inquiry-field textarea {
+  width: 100%;
+  padding: 0.6875rem 0.8125rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+}
+
+.inquiry-field textarea { resize: vertical; }
+
+.inquiry-field input[aria-invalid="true"],
+.inquiry-field textarea[aria-invalid="true"] { border-color: var(--danger); }
+
+.inquiry-hint { margin-top: 0.375rem; color: var(--slate); font-size: var(--text-meta); }
+
+.inquiry-field-error { margin-top: 0.375rem; color: var(--danger); font-size: var(--text-meta); }
+
+.inquiry-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.inquiry-consent {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-top: 0.5rem;
+}
+
+.inquiry-consent input { flex: none; width: 1rem; height: 1rem; margin-top: 0.2rem; accent-color: var(--accent); }
+
+.inquiry-consent label { font-size: 0.8125rem; line-height: 1.6; }
+
+.inquiry-privacy {
+  margin-top: 0.625rem;
+  color: var(--slate);
+  font-size: var(--text-meta);
+  line-height: 1.7;
+}
+
+.inquiry-submit { width: 100%; margin-top: 1.5rem; }
+
+.inquiry-submit:disabled { opacity: 0.6; cursor: progress; }
+
+.inquiry-note {
+  margin-top: 0.75rem;
+  text-align: center;
+  color: var(--slate);
+  font-size: var(--text-meta);
+}
+
+.inquiry-error-summary {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--danger);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: var(--danger-surface);
+  color: var(--danger);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+.inquiry-error-summary ul { margin: 0.625rem 0 0; padding-left: 1.125rem; }
+
+.inquiry-success {
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.inquiry-success h2 { font-size: var(--text-h2); letter-spacing: -0.035em; }
+
+.inquiry-success > p:not(.eyebrow) {
+  max-width: 46ch;
+  margin: 1rem 0 1.5rem;
+  color: var(--slate);
+  line-height: 1.8;
+}
+
+.inquiry-aside { padding-top: 0.5rem; }
+
+.inquiry-aside h2 { font-size: var(--text-h3); letter-spacing: -0.02em; }
+
+.inquiry-aside ol { margin: 0; padding-left: 1.125rem; color: var(--slate); font-size: 0.8125rem; line-height: 1.9; }
+
+.inquiry-aside-note { margin-top: 1.5rem; color: var(--slate); font-size: var(--text-meta); line-height: 1.7; }

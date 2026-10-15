@@ -1,16 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Product } from "@/lib/catalog/types";
 import { formatPrice } from "@/lib/catalog/mock-data";
 import { isSafeProductResourceUrl } from "@/lib/catalog/product-admin";
-import { getIndexableProducts } from "@/lib/catalog/seo";
 
 const COOKING_SPECS = new Set(["Burners", "Cooking area", "Fuel"]);
 
-export function StorefrontProductDetail({ slug }: { slug: string }) {
-  const product = getIndexableProducts().find((item) => item.slug === slug);
-  if (!product) return null;
-
-  const primaryImage = [...product.images].sort((a, b) => a.sortOrder - b.sortOrder)[0] ?? { url: product.image, alt: product.imageAlt, sortOrder: 0 };
+export function StorefrontProductDetail({ product }: { product: Product }) {
+  const primaryImage = [...product.images].sort((a, b) => a.sortOrder - b.sortOrder)[0];
   const cookingSpecs = product.specifications.filter((specification) => COOKING_SPECS.has(specification.name));
   const buildSpecs = product.specifications.filter((specification) => !COOKING_SPECS.has(specification.name));
   const applications = product.applications?.filter((application) => application.trim()) ?? [];
@@ -26,15 +23,19 @@ export function StorefrontProductDetail({ slug }: { slug: string }) {
       </nav>
       <div className="product-detail">
         <div className="product-detail-image" data-reveal>
-          <Image src={primaryImage.url} alt={primaryImage.alt} fill priority unoptimized={!primaryImage.url.startsWith("/")} sizes="(max-width: 1023px) 100vw, 55vw" />
+          {primaryImage ? (
+            <Image src={primaryImage.url} alt={primaryImage.alt} fill priority unoptimized={!primaryImage.url.startsWith("/")} sizes="(max-width: 1023px) 100vw, 55vw" />
+          ) : (
+            <span className="product-image-placeholder" aria-hidden="true" />
+          )}
           {product.badge && <span className="product-badge">{product.badge}</span>}
         </div>
 
         <div className="product-detail-copy" data-reveal style={{ "--reveal-delay": "80ms" } as React.CSSProperties}>
           <p className="eyebrow">{product.collection}</p>
           <h1>{product.name}</h1>
-          <p className="detail-price">{formatPrice(product.price, product.currency)}</p>
-          {product.compareAtPrice && <p className="detail-compare-price">Was {formatPrice(product.compareAtPrice, product.currency)}</p>}
+          {product.price > 0 && <p className="detail-price">{formatPrice(product.price, product.currency)}</p>}
+          {product.compareAtPrice && product.price > 0 && <p className="detail-compare-price">Was {formatPrice(product.compareAtPrice, product.currency)}</p>}
           <p className="detail-summary-lead">{product.shortDescription}</p>
           <p className="detail-summary">{product.description}</p>
 
@@ -69,8 +70,7 @@ export function StorefrontProductDetail({ slug }: { slug: string }) {
               {(resource.fileType || resource.description) && <p>{[resource.fileType, resource.description].filter(Boolean).join(" · ")}</p>}
             </li>)}</ul>
           </section>}
-
-          <a className="button button-primary detail-cta" href={`mailto:hello@emberandfield.example?subject=${encodeURIComponent(`Enquiry about ${product.name}`)}`}>Get in touch</a>
+          <Link className="button button-primary detail-cta" href={`/inquiries?product=${encodeURIComponent(product.slug)}`}>Get in touch</Link>
           <p className="detail-note">Sample product information. Confirm specifications, applications and trade terms with the merchant. No checkout or payment is connected.</p>
         </div>
       </div>
